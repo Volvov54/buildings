@@ -1,8 +1,9 @@
 package com.vva.buildings
 
 import com.vva.buildings.Utils.formatToId
-import com.vva.buildings.Utils.isNotKyiv
+import com.vva.buildings.Utils.getQuotationString
 import org.apache.poi.ss.usermodel.CellType
+import org.apache.poi.ss.usermodel.Row
 import org.apache.poi.xssf.usermodel.XSSFSheet
 
 object FreeSpace {
@@ -58,7 +59,7 @@ object FreeSpace {
                 data.add(building[BuildingIndex.dk018classId.ordinal]) // dk018classId
                 data.add(building[BuildingIndex.dk018classDescription.ordinal]) // dk018classDescription
                 data.add(building[BuildingIndex.unitName.ordinal]) // unitName
-                data.add(building[BuildingIndex.area.ordinal]) // buildingArea
+                data.add(row.getCell(FreeSpaceIndex.area.index).toString()) // buildingArea
                 data.add(building[BuildingIndex.CATUTTC.ordinal]) // CATUTTC
                 data.add(building[BuildingIndex.addressPostCode.ordinal]) // addressPostCode
                 data.add(building[BuildingIndex.addressAdminUnitL1.ordinal]) // addressAdminUnitL1
@@ -78,10 +79,31 @@ object FreeSpace {
                 data.add(building[BuildingIndex.condition.ordinal]) // condition
                 data.add(building[BuildingIndex.utilitiesAvailable.ordinal]) // utilitiesAvailable
                 data.add(building[BuildingIndex.validityDate.ordinal]) // validityDate
+                data.add(getValueBool(row,
+                    FreeSpaceIndex.utilitiesAvailableWaterSupply.index)) // utilitiesAvailableWaterSupply
+                data.add(getValueBool(row,
+                    FreeSpaceIndex.utilitiesAvailableHeatingSupply.index)) // utilitiesAvailableHeatingSupply
+                data.add(getValueStr(row,
+                    FreeSpaceIndex.utilitiesAvailableElectricNetwork.index)) // utilitiesAvailableElectricNetwork
+                data.add(getValueBool(row,
+                    FreeSpaceIndex.utilitiesAvailableGasSupply.index)) // utilitiesAvailableGasSupply
 
                 tabBuildings2.add(data)
             }
         }
+    }
+
+    private fun getValueStr(row: Row, index: Int): String {
+        val s = row.getCell(index).toString().trim()
+        return getQuotationString(s)
+    }
+
+    private fun getValueBool(row: Row, index: Int): String {
+        val s = row.getCell(index).toString().trim().lowercase()
+        if (s.isNullOrBlank() || s == "ні") {
+            return "false"
+        }
+        return "true"
     }
 
     private fun getTitleBuilding(
@@ -101,7 +123,7 @@ object FreeSpace {
             if (parts.last().length < 2) {
                 return parts.get(parts.size - 2)
             }
-            return "${parts.last()}" // Extract the last part of the URL
+            return parts.last() // Extract the last part of the URL
         }
         else return code
     }
@@ -164,5 +186,9 @@ object FreeSpace {
         "condition",
         "utilitiesAvailable",
         "validityDate",
+        "utilitiesAvailableWaterSupply",
+        "utilitiesAvailableHeatingSupply",
+        "utilitiesAvailableElectricNetwork",
+        "utilitiesAvailableGasSupply"
     )
 }
