@@ -3,6 +3,7 @@ package com.vva.buildings
 import com.vva.buildings.Utils.formatToId
 import com.vva.buildings.Utils.getDt8601
 import com.vva.buildings.Utils.getStatus
+import com.vva.buildings.Utils.isNotKyiv
 import com.vva.buildings.Utils.setQuotation
 import org.apache.poi.ss.usermodel.CellType
 import org.apache.poi.xssf.usermodel.XSSFSheet
@@ -16,9 +17,15 @@ object Balans {
             val row = rowIterator.next()
             if (row.rowNum < 2) continue // Skip header row
 
-            val cell0 = row.getCell(BalansIndex.id.ordinal)
-            if (cell0.cellType != CellType.NUMERIC) continue
-            val buildingId = formatToId(cell0)
+            val cellIndex = row.getCell(BalansIndex.id.ordinal)
+            if (cellIndex.cellType != CellType.NUMERIC) continue
+            val buildingId = formatToId(cellIndex)
+            val isNotKievDistrict = isNotKyiv(
+                row.getCell(BalansIndex.addressPostDistrict.ordinal)
+                    .toString()
+                    .lowercase()
+                    .trim()
+            )
 
             val buildingData = mutableListOf<String>()
 
@@ -47,15 +54,20 @@ object Balans {
             buildingData.add("кв. м.")                              // unitName
             buildingData.add(setQuotation(row.getCell(
                 BalansIndex.area.ordinal)))                    // area - Загальна Площа будинку (кв.м.)
-            buildingData.add("UA80000000000093317")                 // CATUTTC
+            if (isNotKievDistrict) buildingData.add("null")
+                else buildingData.add("UA80000000000093317")        // CATUTTC
             buildingData.add(setQuotation(row.getCell(
                 BalansIndex.addressPostCode.ordinal)))         // addressPostCode - Поштовий індекс
             buildingData.add("Україна")                             // addressAdminUnitL1
-            buildingData.add("м. Київ")                             // addressAdminUnitL2
+            if (isNotKievDistrict) buildingData.add("null")
+                else buildingData.add("м. Київ")                    // addressAdminUnitL2
             buildingData.add("null")                                // addressAdminUnitL3
-            buildingData.add("null")                                // addressAdminUnitL4
+            if (isNotKievDistrict) buildingData.add(setQuotation(row.getCell(
+                BalansIndex.addressPostDistrict.ordinal)))
+                else buildingData.add("null")                       // addressAdminUnitL4
             buildingData.add("null")                                // addressPostName
-            buildingData.add(setQuotation(row.getCell(
+            if (isNotKievDistrict) buildingData.add("null")
+                else buildingData.add(setQuotation(row.getCell(
                 BalansIndex.addressPostDistrict.ordinal)))     // addressPostDistrict - Район
             buildingData.add(setQuotation(row.getCell(
                 BalansIndex.addressPostStreet.ordinal)))       // addressPostStreet - Назва Вулиці
@@ -84,11 +96,11 @@ object Balans {
         Utils.getCsvString(header, tabBuildings.values.toList())
 
     val header: Array<String> = arrayOf(
-        "id",
-        "isPartOf",
-        "title",
-        "kind",
-        "type",
+        "id",                        // id=0
+        "isPartOf",                  // isPartOf=1
+        "title",                     // title=2
+        "kind",                      // kind=3
+        "type",                      // type=4
         "description",
         "ownerName",
         "ownerId",

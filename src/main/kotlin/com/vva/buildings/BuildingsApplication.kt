@@ -6,6 +6,7 @@ import com.vva.buildings.FreeSpace.createFreeSpaceTabs
 import com.vva.buildings.FreeSpace.getBuldins2Csv
 import com.vva.buildings.FreeSpace.getProzorroCsv
 import com.vva.buildings.ServiceXlsx.getWorkbook
+import com.vva.buildings.Utils.isNotKyiv
 import org.springframework.boot.CommandLineRunner
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
@@ -14,7 +15,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 
 @SpringBootApplication
-class BuildingsApplication: CommandLineRunner {
+class BuildingsApplication : CommandLineRunner {
     val pathInputBalans = "Balans.xlsx"
     val pathInputFreeSpace = "FreeSpace.xlsx"
     val pathOutputBuildings = FileSystems.getDefault().getPath("buildings.csv")
@@ -27,6 +28,12 @@ class BuildingsApplication: CommandLineRunner {
         val workbookBalans = getWorkbook(pathInputBalans)
         val sheetBalans = workbookBalans.getSheetAt(0)
         val tabBuildings = getTabBalans(sheetBalans)
+
+        val listObl = tabBuildings.values.filter { b ->
+            isNotKyiv(b[BuildingIndex.addressPostDistrict.ordinal])
+        }
+        println("Number of buildings in Kyiv Oblast: ${listObl.size}")
+//        listObl.forEach { println("${it.get(0)} - ${it.get(21)} - ${it.get(24)}") }
 
         val balansCsv = getBalansCsv(tabBuildings)
         saveCsvFile(balansCsv, pathOutputBuildings)
@@ -44,7 +51,7 @@ class BuildingsApplication: CommandLineRunner {
         println("CSV files generated successfully!")
     }
 
-    private fun saveCsvFile(csv: String, path: Path)  {
+    private fun saveCsvFile(csv: String, path: Path) {
         Files.newBufferedWriter(path).use { out ->
             out.write(csv)
         }

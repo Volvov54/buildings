@@ -1,6 +1,7 @@
 package com.vva.buildings
 
 import com.vva.buildings.Utils.formatToId
+import com.vva.buildings.Utils.isNotKyiv
 import org.apache.poi.ss.usermodel.CellType
 import org.apache.poi.xssf.usermodel.XSSFSheet
 
@@ -15,11 +16,14 @@ object FreeSpace {
         while (rowIterator.hasNext()) {
             val row = rowIterator.next()
             if (row.rowNum < 3) continue // Skip header row
+
             val cellIdSpace = row.getCell(FreeSpaceIndex.idSpace.ordinal) // Реєстра-ційний №
             if (cellIdSpace.cellType != CellType.NUMERIC) continue // Skip empty rows
             val idSpace = formatToId(cellIdSpace) // ID вільного простору
             val idBuilding = formatToId(row.getCell(FreeSpaceIndex.buildingId.ordinal)) // ID об'єкту
+
             val cellEtcCode = row.getCell(FreeSpaceIndex.etcCode.ordinal) // Унікальний код обєкту у ЕТС Прозорро-продажі
+
             if (cellEtcCode.cellType == CellType.STRING) {
                 val etcCode = getEtcCode(cellEtcCode.toString().trim())
                 val url = getUrl(etcCode)

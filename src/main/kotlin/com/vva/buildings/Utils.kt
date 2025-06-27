@@ -33,7 +33,7 @@ object Utils {
 
     fun getDt8601(cell: Cell): String {
         if (cell.cellType == CellType.BLANK) {
-           return "null"
+            return "null"
         } else {
             val dt = cell.dateCellValue
             val formatOut = SimpleDateFormat("yyyy-MM-dd")
@@ -54,4 +54,25 @@ object Utils {
         }
         return sb.toString()
     }
+
+    fun isNotKyiv(address: String): Boolean {
+        val _address = address.lowercase().trim()
+        if (_address == "КИЄВО-СВЯТОШИНСЬКИЙ".lowercase()) {
+            return true
+        }
+        return KyivDestrict.find { it in _address }.isNullOrBlank()
+    }
+
+    val KyivDestrict = listOf(
+        "голосіївський",
+        "дарницький",
+        "деснянський",
+        "дніпровський",
+        "оболонський",
+        "печерський",
+        "подільський",
+        "святошинський",
+        "шевченківський",
+        "солом'янський",
+    )
 }
