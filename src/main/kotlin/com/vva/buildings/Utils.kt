@@ -34,6 +34,8 @@ object Utils {
     fun getDt8601(cell: Cell): String {
         if (cell.cellType == CellType.BLANK) {
             return "null"
+        } else if (cell.cellType == CellType.STRING) {
+            return cell.toString()
         } else {
             val dt = cell.dateCellValue
             val formatOut = SimpleDateFormat("yyyy-MM-dd")
@@ -53,6 +55,41 @@ object Utils {
             sb.append(data.joinToString(",")).append("\n")
         }
         return sb.toString()
+    }
+
+    public fun getEtcCode(code: String): String {
+        if (code.startsWith("http")) {
+            val parts = code.split("/")
+            if (parts.last().length < 2) {
+                return parts.get(parts.size - 2)
+            }
+            return parts.last() // Extract the last part of the URL
+        }
+        else return code
+    }
+
+    public fun getUrl(etcCode: String): String {
+        when (etcCode.slice(0..1)) {
+            "LL" -> return "https://prozorro.sale/auction/$etcCode"
+            "UA" -> return "https://prozorro.sale/auction/$etcCode"
+            "RG" -> return "https://prozorro.sale/planning/$etcCode"
+            else -> return etcCode
+        }
+    }
+
+    public fun getTitleBuilding(
+        tabBuildings: Map<String, List<String>>,
+        idBuilding: String
+    ): String {
+        return if (tabBuildings.containsKey(idBuilding)) {
+            tabBuildings[idBuilding]?.get(BuildingIndex.title.ordinal) ?: "Невідомо" // Назва об'єкту
+        } else {
+            "Невідомо"
+        }
+    }
+
+    public fun is634(destinationGroup: String): Boolean {
+        return destinationGroup.contains("634")
     }
 
     fun isNotKyiv(address: String): Boolean {

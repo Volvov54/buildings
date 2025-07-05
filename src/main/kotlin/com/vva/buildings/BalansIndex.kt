@@ -1,6 +1,6 @@
 package com.vva.buildings
 
-enum class BalansIndex(index: Int) {
+enum class BalansIndex(val index: Int) {
     id(0),                    // ID об'єкту
     title(1),                 // Назва об'єкту
     kind(2),                  // Вид Об'єкту відповідно Класифікатора майна
@@ -16,5 +16,6 @@ enum class BalansIndex(index: Int) {
     addressPostStreet(12),    // Назва Вулиці
     registrationId(13),       // Реєстрація у Державному реєстрі (Реєстраційний номер об'єкту нерухомого майна)
     condition(14),            // Стан об'єкту
-    validityDate(15)          // Дата Актуальності
+    validityDate(15),         // Дата Актуальності
+    destinationGroup(16),     // Група призначення
 }

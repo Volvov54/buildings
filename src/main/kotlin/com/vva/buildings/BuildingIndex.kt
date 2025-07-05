@@ -1,6 +1,6 @@
 package com.vva.buildings
 
-enum class BuildingIndex(index: Int) {
+enum class BuildingIndex(val index: Int) {
     id(0),
     isPartOf(1),
     title(2),
@@ -35,5 +35,6 @@ enum class BuildingIndex(index: Int) {
     constructionReadiness(31),
     condition(32),
     utilitiesAvailable(33),
-    validityDate(34)
+    validityDate(34),
+    destinationGroup(35) // Група призначення
 }

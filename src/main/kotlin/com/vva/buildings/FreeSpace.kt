@@ -1,7 +1,10 @@
 package com.vva.buildings
 
 import com.vva.buildings.Utils.formatToId
+import com.vva.buildings.Utils.getEtcCode
 import com.vva.buildings.Utils.getQuotationString
+import com.vva.buildings.Utils.getTitleBuilding
+import com.vva.buildings.Utils.getUrl
 import org.apache.poi.ss.usermodel.CellType
 import org.apache.poi.ss.usermodel.Row
 import org.apache.poi.xssf.usermodel.XSSFSheet
@@ -104,37 +107,6 @@ object FreeSpace {
             return "false"
         }
         return "true"
-    }
-
-    private fun getTitleBuilding(
-        tabBuildings: Map<String, List<String>>,
-        idBuilding: String
-    ): String {
-        return if (tabBuildings.containsKey(idBuilding)) {
-            tabBuildings[idBuilding]?.get(BuildingIndex.title.ordinal) ?: "Невідомо" // Назва об'єкту
-        } else {
-            "Невідомо"
-        }
-    }
-
-    private fun getEtcCode(code: String): String {
-        if (code.startsWith("http")) {
-            val parts = code.split("/")
-            if (parts.last().length < 2) {
-                return parts.get(parts.size - 2)
-            }
-            return parts.last() // Extract the last part of the URL
-        }
-        else return code
-    }
-
-    private fun getUrl(etcCode: String): String {
-        when (etcCode.slice(0..1)) {
-            "LL" -> return "https://prozorro.sale/auction/$etcCode"
-            "UA" -> return "https://prozorro.sale/auction/$etcCode"
-            "RG" -> return "https://prozorro.sale/planning/$etcCode"
-            else -> return etcCode
-        }
     }
 
     fun getProzorroCsv(): String =
