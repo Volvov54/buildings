@@ -57,7 +57,7 @@ object Utils {
         return sb.toString()
     }
 
-    public fun getEtcCode(code: String): String {
+    fun getEtcCode(code: String): String {
         if (code.startsWith("http")) {
             val parts = code.split("/")
             if (parts.last().length < 2) {
@@ -68,7 +68,7 @@ object Utils {
         else return code
     }
 
-    public fun getUrl(etcCode: String): String {
+    fun getUrl(etcCode: String): String {
         when (etcCode.slice(0..1)) {
             "LL" -> return "https://prozorro.sale/auction/$etcCode"
             "UA" -> return "https://prozorro.sale/auction/$etcCode"
@@ -77,7 +77,7 @@ object Utils {
         }
     }
 
-    public fun getTitleBuilding(
+    fun getTitleBuilding(
         tabBuildings: Map<String, List<String>>,
         idBuilding: String
     ): String {
@@ -88,7 +88,7 @@ object Utils {
         }
     }
 
-    public fun is634(destinationGroup: String): Boolean {
+    fun is634(destinationGroup: String): Boolean {
         return destinationGroup.contains("634")
     }
 
