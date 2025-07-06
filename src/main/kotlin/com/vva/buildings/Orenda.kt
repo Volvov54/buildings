@@ -1,17 +1,19 @@
 package com.vva.buildings
 
-import com.vva.buildings.FreeSpace.headerProzorro
 import com.vva.buildings.FreeSpace.tabProzoro
 import com.vva.buildings.Utils.formatToId
 import com.vva.buildings.Utils.getDt8601
 import com.vva.buildings.Utils.getEtcCode
 import com.vva.buildings.Utils.getTitleBuilding
 import com.vva.buildings.Utils.getUrl
-import com.vva.buildings.Utils.setQuotation
 import org.apache.poi.ss.usermodel.CellType
 import org.apache.poi.xssf.usermodel.XSSFSheet
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 object Orenda {
+    val logger: Logger = LoggerFactory.getLogger(Orenda::class.java)
+
     val tabListProzoro = mutableListOf<List<String>>()
     val tabList = mutableListOf<List<String>>()
 
@@ -19,6 +21,7 @@ object Orenda {
         tabBuildings: Map<String, List<String>>,
         sheet: XSSFSheet
     ) {
+        logger.info("Start creating Orenda tabs")
         tabListProzoro.clear()
         tabList.clear()
 
@@ -30,9 +33,28 @@ object Orenda {
             val cellIdOrenda = row.getCell(OrendaIndex.id.index)
             if (cellIdOrenda == null) continue
             if (cellIdOrenda.cellType != CellType.NUMERIC) continue
-//            val idOrenda = formatToId(cellIdOrenda) // ID договору оренди
-//            val idBuilding = formatToId(row.getCell(OrendaIndex.idBuilding.index)) // ID об'єкту
-            val idBuilding = "45869" // ID об'єкту
+            val idOrenda = formatToId(cellIdOrenda) // ID договору оренди
+
+            val idBuildingCell = row.getCell(OrendaIndex.idBuilding.index) // cell ID об'єкту
+            val idBuildingArray = idBuildingCell.toString()
+            if (idBuildingArray.isNullOrBlank()) {
+                val msg = "ID об'єкту порожній у рядку ${row.rowNum}, idOrenda: $idOrenda"
+//                println(msg)
+                logger.info(msg)
+                continue
+            }
+            val idBuildings = idBuildingArray.split(";").map { it.trim() }
+            val idBuilding = idBuildings[0] // Беремо перший ID об'єкту
+
+            val building = tabBuildings[idBuilding]
+            if (building == null) {
+                val msg = "Building with ID ${idBuildings[0]} not found in tabBuildings, idOrenda: $idOrenda"
+//                println(msg)
+                logger.info(msg)
+                continue
+            }
+//            if ()
+
             val cellEtcCode =
                 row.getCell(OrendaIndex.etcCode.index) // Унікальний код обєкту у ЕТС Прозорро-продажі
             if (cellEtcCode.cellType == CellType.STRING) {
@@ -41,18 +63,12 @@ object Orenda {
                 val title = getTitleBuilding(tabBuildings, idBuilding)
 
                 val data = mutableListOf<String>()
-//                data.add(idOrenda) // ocid - Унікальний код обєкту у ЕТС Прозорро-продажі
+                data.add(etcCode) // ocid - Унікальний код обєкту у ЕТС Прозорро-продажі
                 data.add(title)   // title - Назва об'єкту
                 data.add(url)     // url - Унікальний код обєкту у ЕТС Прозорро-продажі
 
                 tabProzoro.add(data)
             } else {
-                val building = tabBuildings[idBuilding]
-                if (building == null) {
-                    println("Building with ID $idBuilding not found in tabBuildings")
-                    continue
-                }
-
                 val data = mutableListOf<String>()
 //                data.add(idOrenda) // id - ID договору оренди
                 data.add("4444")
@@ -195,10 +211,14 @@ object Orenda {
                 tabList.add(data)
             }
         }
+        logger.info("Finished creating Orenda tabs")
     }
 
     fun getListCsv() =
         Utils.getCsvString(headerList, tabList)
+
+    fun getListProzorroSalesCsv() =
+        Utils.getCsvString(headerListProzorroSales, tabListProzoro)
 
     val headerListProzorroSales = arrayOf(
         "ocid",

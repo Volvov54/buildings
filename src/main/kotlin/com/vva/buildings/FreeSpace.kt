@@ -5,6 +5,7 @@ import com.vva.buildings.Utils.getEtcCode
 import com.vva.buildings.Utils.getQuotationString
 import com.vva.buildings.Utils.getTitleBuilding
 import com.vva.buildings.Utils.getUrl
+import com.vva.buildings.Utils.is634
 import org.apache.poi.ss.usermodel.CellType
 import org.apache.poi.ss.usermodel.Row
 import org.apache.poi.xssf.usermodel.XSSFSheet
@@ -24,9 +25,20 @@ object FreeSpace {
             val cellIdSpace = row.getCell(FreeSpaceIndex.idSpace.ordinal) // Реєстра-ційний №
             if (cellIdSpace.cellType != CellType.NUMERIC) continue // Skip empty rows
             val idSpace = formatToId(cellIdSpace) // ID вільного простору
-            val idBuilding = formatToId(row.getCell(FreeSpaceIndex.buildingId.ordinal)) // ID об'єкту
 
-            val cellEtcCode = row.getCell(FreeSpaceIndex.etcCode.ordinal) // Унікальний код обєкту у ЕТС Прозорро-продажі
+            val idBuilding = formatToId(row.getCell(
+                FreeSpaceIndex.buildingId.ordinal)) // ID об'єкту
+            val building = tabBuildings[idBuilding]
+            if (building == null) {
+                println("Building with ID $idBuilding not found in tabBuildings")
+                continue
+            }
+            if (is634(building[BuildingIndex.destinationGroup.ordinal].toString())) {
+                continue // Skip buildings with 634 code
+            }
+
+            val cellEtcCode = row.getCell(
+                FreeSpaceIndex.etcCode.ordinal) // Унікальний код обєкту у ЕТС Прозорро-продажі
 
             if (cellEtcCode.cellType == CellType.STRING) {
                 val etcCode = getEtcCode(cellEtcCode.toString().trim())
@@ -40,12 +52,6 @@ object FreeSpace {
 
                 tabProzoro.add(data)
             } else {
-                val building = tabBuildings[idBuilding]
-                if (building == null) {
-                    println("Building with ID $idBuilding not found in tabBuildings")
-                    continue
-                }
-
                 val data = mutableListOf<String>()
                 data.add("$idSpace-$idBuilding") // buildingId
                 data.add(building[BuildingIndex.isPartOf.ordinal]) // isPartOf

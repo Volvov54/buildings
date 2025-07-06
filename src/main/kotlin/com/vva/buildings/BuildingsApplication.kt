@@ -25,7 +25,7 @@ class BuildingsApplication : CommandLineRunner {
     val pathOutputProzorro = FileSystems.getDefault().getPath("listProzorroSales.csv")
     val pathOutputList = FileSystems.getDefault().getPath("list.csv")
     val pathOutputListProzorroSales =
-        FileSystems.getDefault().getPath("listProzorroSales.csv")
+        FileSystems.getDefault().getPath("listProzorroSales2.csv")
 
     override fun run(vararg args: String?) {
         // Initialization logic can be added here if needed
@@ -38,20 +38,19 @@ class BuildingsApplication : CommandLineRunner {
             is634(b[BuildingIndex.destinationGroup.index].toString())
         }
         println("Total buildings with 634 code: ${list634.size}")
-//        listObl.forEach { println("${it.get(0)} - ${it.get(21)} - ${it.get(24)}") }
 
         val balansCsv = getBalansCsv(tabBuildings)
         saveCsvFile(balansCsv, pathOutputBuildings)
-//
-//        val workbookFreeSpace = getWorkbook(pathInputFreeSpace)
-//        val sheetFreeSpace = workbookFreeSpace.getSheetAt(0)
-//        createFreeSpaceTabs(tabBuildings, sheetFreeSpace)
-//
-//        val prozorroCsv = getProzorroCsv()
-//        saveCsvFile(prozorroCsv, pathOutputProzorro)
-//
-//        val buildings2Csv = getBuldins2Csv()
-//        saveCsvFile(buildings2Csv, pathOutputBuildings2)
+
+        val workbookFreeSpace = getWorkbook(pathInputFreeSpace)
+        val sheetFreeSpace = workbookFreeSpace.getSheetAt(0)
+        createFreeSpaceTabs(tabBuildings, sheetFreeSpace)
+
+        val prozorroCsv = getProzorroCsv()
+        saveCsvFile(prozorroCsv, pathOutputProzorro)
+
+        val buildings2Csv = getBuldins2Csv()
+        saveCsvFile(buildings2Csv, pathOutputBuildings2)
 
         val workbookOrenda = getWorkbook(pathInputOrenda)
         val sheetOrenda = workbookOrenda.getSheetAt(0)
@@ -59,6 +58,9 @@ class BuildingsApplication : CommandLineRunner {
 
         val listCsv = Orenda.getListCsv()
         saveCsvFile(listCsv, pathOutputList)
+
+        val listProzorroSalesCsv = Orenda.getListProzorroSalesCsv()
+        saveCsvFile(listProzorroSalesCsv, pathOutputListProzorroSales)
 
         println("CSV files generated successfully!")
     }

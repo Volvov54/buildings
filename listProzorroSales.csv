@@ -1,7 +1,5 @@
 ocid,title,url
 203,"вільне",https://prozorro.sale/planning/RGL001-UA-20250519-82910
-226,"Амбулаторія загальної практики сімейної медицини",https://prozorro.sale/planning/RGL001-UA-20230214-39543
-227,"Амбулаторія загальної практики сімейної медицини",https://prozorro.sale/planning/RGL001-UA-20230214-04371
 448,null,https://prozorro.sale/planning/RGL001-UA-20220927-86062
 831,"Амбулаторія  загальної практики-сімейної медицини",https://prozorro.sale/planning/RGL001-UA-20230411-53508
 1032,"нежитлові приміщення в житловому будинку",https://prozorro.sale/planning/RGL001-UA-20231011-10261
@@ -31,11 +29,8 @@ ocid,title,url
 3490,"установи, ГУ поліції, вільне",https://prozorro.sale/planning/RGL001-UA-20210809-68972
 3697,"нежитлове приміщення, підвал",https://prozorro.sale/planning/RGL001-UA-20220125-39431
 4094,"АДМІНІСТРАТИВНЕ",https://prozorro.sale/auction/LLE001-UA-20240131-54515
-4246,"перукарня, вільні",https://prozorro.sale/planning/RGL001-UA-20241125-27930
 4451,"Теплиця",https://prozorro.sale/planning/RGL001-UA-20210601-10421
 4453,"Теплиця",https://prozorro.sale/planning/RGL001-UA-20231009-35117
-4632,"пр. в житл. буд",https://prozorro.sale/planning/RGL001-UA-20230414-23548
-4633,"окремостояча (нежитлові приміщення-БПО)",https://prozorro.sale/planning/RGL001-UA-20240805-04535
 4663,"СМІТТЄЗБІРНИК",https://prozorro.sale/planning/RGL001-UA-20230421-86708
 4739,"вільне",https://prozorro.sale/planning/RGL001-UA-20230501-09736
 4783,"СМІТТЄЗБІРНИК",https://prozorro.sale/planning/RGL001-UA-20230603-88140
@@ -56,8 +51,6 @@ ocid,title,url
 5664,"АДМІНІСТРАТИВНО-ПОБУТОВИЙ КОРПУС (ЛІТЕРА ""А"")",https://prozorro.sale/auction/LLE001-UA-20230316-71027
 5682,"ПОЛІКЛІНІКА",https://prozorro.sale/auction/LLE001-UA-20250313-60688
 5683,"офісні, вільне",https://prozorro.sale/planning/RGL001-UA-20210212-17123
-5983,"окремостояча (нежитлові приміщення-БПО)",https://prozorro.sale/planning/RGL001-UA-20230413-19310
-5984,"окремостояча (нежитлові приміщення-БПО)",https://prozorro.sale/planning/RGL001-UA-20230413-87261
 5987,null,https://prozorro.sale/planning/RGL001-UA-20240207-52903
 6062,"СМІТТЄЗБІРНИК",https://prozorro.sale/planning/RGL001-UA-20230417-47506
 6074,"МЕДИЧНІ ПОСЛУГИ",https://prozorro.sale/planning/RGL001-UA-20240606-18255
@@ -70,11 +63,10 @@ ocid,title,url
 6206,"УЧБОВЕ ПРИМІЩЕННЯ",https://prozorro.sale/auction/LLE001-UA-20240315-82514
 6212,"нежитлове приміщення в житловому",https://prozorro.sale/planning/RGL001-UA-20220104-44259
 6229,"нежитлові приміщення в житловому будинку",https://prozorro.sale/planning/RGL001-UA-20240801-75339
-6396,"СМІТТЄЗБІРНИК",https://prozorro.sale/planning/RGL001-UA-20220125-87168
 6515,"АДМІНІСТРАТИВНЕ",https://prozorro.sale/auction/LLE001-UA-20240709-33040
 6547,"ПІДЗЕМНИЙ ПЕРЕХІД І ДОПОМІЖНІ ПРИМІЩЕННЯ (ПІДЗЕМНІ)",https://prozorro.sale/auction/LLE001-UA-20240813-33335
 6565,"ЛІКУВАЛЬНИЙ КОРПУС",https://prozorro.sale/planning/RGL001-UA-20250311-97515
-6606,"КАФЕ",https://prozorro.sale/auction/LLE001-UA-20250507-87556
+6606,"КАФЕ",https://prozorro.sale/auction/LLE001-UA-20250618-65815
 6728,"нежитлові приміщення в житловому",https://prozorro.sale/planning/RGL001-UA-20240802-11001
 6805,"РИНОК",https://prozorro.sale/auction/LLD001-UA-20250602-94991
 6819,null,https://prozorro.sale/auction/LLE001-UA-20250203-71975
@@ -85,13 +77,11 @@ ocid,title,url
 6976,"оренда, вільне 83,6 кв.м, з них: 22,6 кв.м - триває процес укладення договору оренди",https://prozorro.sale/planning/RGL001-UA-20250507-83086
 6982,"нежитлове приміщення в житловому",https://prozorro.sale/planning/RGL001-UA-20230426-71582
 6986,"нежитлові приміщення в житловому будинку",https://prozorro.sale/planning/RGL001-UA-20230426-82479
-7001,"нежитлове приміщення в житловому (СХОВИЩЕ-106,4 КВ.М, ПІДВАЛ-116,1 КВ.М,ПІДВАЛ-65,8 (ДОГОВІР ОРЕНДИ)",https://prozorro.sale/planning/RGL001-UA-20240322-50142
 7019,"СТОМАТОЛОГІЧНА ПОЛІКЛІНІКА",https://prozorro.sale/auction/LLE001-UA-20250313-98334
 7025,"ПОЛІКЛІНІКА",https://prozorro.sale/auction/LLE001-UA-20250313-79663
 7033,null,https://prozorro.sale/planning/RGL001-UA-20250418-55752
 7045,"БУДЬ-ЯКИМ ЦІЛЬОВИМ ПРИЗНАЧЕННЯМ",https://prozorro.sale/planning/RGL001-UA-20211019-03991
 7063,"нежитлове приміщення в житловому",https://prozorro.sale/planning/RGL001-UA-20231129-54698
-7064,"окремостояча (БПО",https://prozorro.sale/planning/RGL001-UA-20250223-04610
 7093,"СМІТТЄЗБІРНИК",https://prozorro.sale/planning/RGL001-UA-20250305-63337
 7095,"Композиція вхідної групи",https://prozorro.sale/auction/LLE001-UA-20250502-91031
 7100,"АДМІНІСТРАТИВНЕ",https://prozorro.sale/planning/RGLA001-UA-20250505-29764
@@ -100,15 +90,20 @@ ocid,title,url
 7109,"окремостояча (ЖЕД-208)",https://prozorro.sale/planning/RGL001-UA-20230414-42485
 7110,"окремостояче (ЖЕД-208)",https://prozorro.sale/planning/RGL001-UA-20230414-02662
 7111,"окремостояче (ЖЕД-208)",https://prozorro.sale/planning/RGL001-UA-20250311-88179
+7165,"Нежитлова будівля харчоблоку (кор.13) , літ.""Г-1""",https://prozorro.sale/auction/LLE001-UA-20250626-24205
 7172,"МЕДИЧНІ ПОСЛУГИ",https://prozorro.sale/planning/RGL001-UA-20250513-05629
-7174,"СМІТТЄЗБІРНИК",https://prozorro.sale/planning/RGL001-UA-20250402-58797
-7184,"нежитлове в житловому",https://prozorro.sale/planning/RGL001-UA-20230414-62817
-7185,"нежитлове приміщення в житловому",https://prozorro.sale/planning/RGL001-UA-20250404-39566
 7188,"приміщення в нежитловій окремостоячій будівлі",https://prozorro.sale/planning/RGL001-UA-20220131-29099
 7201,"Лікувально-профілактичні",https://prozorro.sale/planning/RGL001-UA-20250328-27747
-7207,"СМІТТЄЗБІРНИК",https://prozorro.sale/planning/RGL001-UA-20220106-64372
+7210,"Нежитлова будівля головного корпусу №4,літ.""Б - 1""",https://prozorro.sale/auction/LLE001-UA-20250626-21833
 7217,"Лікувально-профілактичні",https://prozorro.sale/planning/RGL001-UA-20250424-22351
+7224,"НЕЖИТЛОВА БУДІВЛЯ ПРАЛЬНІ",https://prozorro.sale/auction/LLE001-UA-20250627-61211
 7225,"ЛІКУВАЛЬНИЙ КОРПУС",https://prozorro.sale/auction/LLE001-UA-20250502-09293
 7226,"нежитлове приміщення, підвал",https://prozorro.sale/planning/RGL001-UA-20250502-37691
+7232,null,https://prozorro.sale/planning/RGL001-UA-20210212-38421
+7233,"Будівля навчального корпусу літ. А",https://prozorro.sale/auction/LLE001-UA-20250702-46004
+7234,"Будівля навчального корпусу літ. А",https://prozorro.sale/auction/LLE001-UA-20250702-07224
 7235,null,https://prozorro.sale/planning/RGL001-UA-20240131-25187
+7246,"ГОСПОДАРЧИЙ КОРПУС",https://prozorro.sale/auction/LLE001-UA-20250627-20377
+7247,"ЛІКУВАЛЬНИЙ КОРПУС (АКУШЕРСЬКО-ГІНЕКОЛОГІЧНИЙ)",https://prozorro.sale/auction/LLE001-UA-20250627-73868
+7248,"Лабораторно-клінічний корпус",https://prozorro.sale/auction/LLE001-UA-20250627-32282
 7250,"ЛІЦЕЙ № 230",https://prozorro.sale/planning/RGL001-UA-20250527-96048
