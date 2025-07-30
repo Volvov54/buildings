@@ -9,4 +9,5 @@ enum class FreeSpaceIndex(val index: Int) {
     utilitiesAvailableHeatingSupply(8), // Наявність теплопостачання
     utilitiesAvailableElectricNetwork(9), // Наявність електромереж
     utilitiesAvailableGasSupply(10), // Наявність газопостачання
+    addressLocatorDesignator(11), // Номер будинку
 }

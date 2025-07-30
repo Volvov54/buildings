@@ -17,4 +17,6 @@ enum class OrendaIndex(val index: Int) {
     contractValueAmount(13), // Місячна орендна плата, грн.
     contractUserName(14), // Орендар - Повна Назва
     contractUserId(15), // Орендар - Код ЄДРПОУ
+    addressLocatorDesignator(16), // Номер будинку
+    validityDate(17), // Дата Актуальності
 }

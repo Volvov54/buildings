@@ -6,7 +6,8 @@
         </Console>
         <RollingFile name="File" fileName="logs/spring-boot-application.log" filePattern="logs/spring-boot-application-%d{yyyy-MM-dd}.log">
             <PatternLayout>
-                <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n</pattern>
+<!--                <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n</pattern>-->
+                <pattern>[%thread] - %msg%n</pattern>
             </PatternLayout>
             <TimeBasedTriggeringPolicy/>
             <DefaultRolloverStrategy max="30"/>

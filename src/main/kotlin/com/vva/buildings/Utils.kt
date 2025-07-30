@@ -10,7 +10,7 @@ object Utils {
         if (cell.cellType == CellType.BLANK) {
             return "null"
         }
-        val s = cell.toString()
+        val s = cell.toString().trim()
         return getQuotationString(s)
     }
 
@@ -20,6 +20,20 @@ object Utils {
         } else {
             val s1 = s.replace("\"", "\"\"") // Escape double quotes
             "\"$s1\""
+        }
+    }
+
+    fun getCurrencyValue(cell: Cell): String {
+        return if (cell.cellType == CellType.NUMERIC) {
+            val decimalFormat = DecimalFormat("#,##0.00")
+            val d = decimalFormat.format(cell.numericCellValue)
+            if (d.isNotBlank()) {
+                d.replace(",", ".") // Replace comma with dot for decimal
+            } else {
+                "0.00"
+            }
+        } else {
+            "0.00"
         }
     }
 
@@ -58,7 +72,7 @@ object Utils {
     }
 
     fun getEtcCode(code: String): String {
-        if (code.startsWith("http")) {
+        if (code.startsWith("http") || code.startsWith("hhttp")) {
             val parts = code.split("/")
             if (parts.last().length < 2) {
                 return parts.get(parts.size - 2)
@@ -90,6 +104,21 @@ object Utils {
 
     fun is634(destinationGroup: String): Boolean {
         return destinationGroup.contains("634")
+    }
+
+    fun is634m(
+        tabBuildings: Map<String, List<String>>,
+        idBuildings: List<String>
+    ): Boolean {
+        idBuildings.forEach { id ->
+            if (tabBuildings.containsKey(id)) {
+                val destinationGroup = tabBuildings[id]?.get(BuildingIndex.destinationGroup.ordinal)
+                if (destinationGroup != null && is634(destinationGroup)) {
+                    return true
+                }
+            }
+        }
+        return false
     }
 
     fun isNotKyiv(address: String): Boolean {

@@ -31,65 +31,66 @@ object Balans {
 
             val buildingData = mutableListOf<String>()
 
-            buildingData.add(buildingId)                            // id - ID об'єкту
-            buildingData.add("null")                                // isPartOf
+            buildingData.add(buildingId)                           // id - ID об'єкту
+            buildingData.add("null")                               // isPartOf
             buildingData.add(setQuotation(
-                row.getCell(BalansIndex.title.index)))       // title - Назва об'єкту
+                row.getCell(BalansIndex.title.index)))        // title - Назва об'єкту
             buildingData.add(setQuotation(
-                row.getCell(BalansIndex.kind.index)))        // kind - Вид Об'єкту відповідно Класифікатора майна
+                row.getCell(BalansIndex.kind.index)))         // kind - Вид Об'єкту відповідно Класифікатора майна
             buildingData.add(setQuotation(
-                row.getCell(BalansIndex.type.index)))        // type - Тип Об'єкту
+                row.getCell(BalansIndex.type.index)))         // type - Тип Об'єкту
             buildingData.add(setQuotation(
-                row.getCell(BalansIndex.description.index))) // description - Призначення
-            buildingData.add("Київська міська рада")                // ownerName
-            buildingData.add("22883141")                            // ownerId
+                row.getCell(BalansIndex.description.index)))  // description - Призначення
+            buildingData.add("Київська міська рада")               // ownerName
+            buildingData.add("22883141")                           // ownerId
             buildingData.add(setQuotation(row.getCell(
-                    BalansIndex.balanceHolderName.index)))  // balanceHolderName - Балансоутримувач - Повна Назва
+                    BalansIndex.balanceHolderName.index)))    // balanceHolderName - Балансоутримувач - Повна Назва
             buildingData.add(setQuotation(row.getCell(
-                BalansIndex.balanceHolderId.index)))         // balanceHolderId - Балансоутримувач - Код ЄДРПОУ
-            buildingData.add("null")                                // userName
-            buildingData.add("null")                                // userId
+                BalansIndex.balanceHolderId.index)))          // balanceHolderId - Балансоутримувач - Код ЄДРПОУ
+            buildingData.add("null")                               // userName
+            buildingData.add("null")                               // userId
             buildingData.add(setQuotation(row.getCell(
-                BalansIndex.dk018classId.index)))            // dk018classId
+                BalansIndex.dk018classId.index)))             // dk018classId
             buildingData.add(setQuotation(row.getCell(
-                BalansIndex.dk018classDescription.index)))   // dk018classDescription
-            buildingData.add("кв. м.")                              // unitName
+                BalansIndex.dk018classDescription.index)))    // dk018classDescription
+            buildingData.add("кв. м.")                             // unitName
             buildingData.add(setQuotation(row.getCell(
-                BalansIndex.area.index)))                    // area - Загальна Площа будинку (кв.м.)
+                BalansIndex.area.index)))                     // area - Загальна Площа будинку (кв.м.)
             if (isNotKievDistrict) buildingData.add("null")
-                else buildingData.add("UA80000000000093317")        // CATUTTC
+                else buildingData.add("UA80000000000093317")       // CATUTTC
             buildingData.add(setQuotation(row.getCell(
-                BalansIndex.addressPostCode.ordinal)))         // addressPostCode - Поштовий індекс
-            buildingData.add("Україна")                             // addressAdminUnitL1
+                BalansIndex.addressPostCode.ordinal)))        // addressPostCode - Поштовий індекс
+            buildingData.add("Україна")                            // addressAdminUnitL1
             if (isNotKievDistrict) buildingData.add("null")
-                else buildingData.add("м. Київ")                    // addressAdminUnitL2
-            buildingData.add("null")                                // addressAdminUnitL3
+                else buildingData.add("м. Київ")                   // addressAdminUnitL2
+            buildingData.add("null")                               // addressAdminUnitL3
             if (isNotKievDistrict) buildingData.add(setQuotation(row.getCell(
                 BalansIndex.addressPostDistrict.index)))
-                else buildingData.add("null")                       // addressAdminUnitL4
-            buildingData.add("null")                                // addressPostName
+                else buildingData.add("null")                      // addressAdminUnitL4
+            if (isNotKievDistrict) buildingData.add("null")
+            else buildingData.add("Київ")                          // addressPostName
             if (isNotKievDistrict) buildingData.add("null")
                 else buildingData.add(setQuotation(row.getCell(
-                BalansIndex.addressPostDistrict.index)))     // addressPostDistrict - Район
+                BalansIndex.addressPostDistrict.index)))      // addressPostDistrict - Район
             buildingData.add(setQuotation(row.getCell(
-                BalansIndex.addressPostStreet.index)))       // addressPostStreet - Назва Вулиці
-            buildingData.add("xxx")                                 // addressLocatorDesignator - Номер Будинку
-            buildingData.add("null")                                // addressLocatorBuilding
-            buildingData.add("null")                                // addressLocatorName
+                BalansIndex.addressPostStreet.index)))        // addressPostStreet - Назва Вулиці
+            buildingData.add("xxx")                                // addressLocatorDesignator - Номер Будинку
+            buildingData.add("null")                               // addressLocatorBuilding
+            buildingData.add("null")                               // addressLocatorName
             buildingData.add(getStatus(row.getCell(
-                BalansIndex.registrationId.index)))          // registrationStatus - Реєстрація у Державному реєстрі (Реєстраційний номер об'єкту нерухомого майна)
+                BalansIndex.registrationId.index)))           // registrationStatus - Реєстрація у Державному реєстрі (Реєстраційний номер об'єкту нерухомого майна)
             buildingData.add(setQuotation(row.getCell(
-                BalansIndex.registrationId.index)))          // registrationId - Реєстрація у Державному реєстрі (Реєстраційний номер об'єкту нерухомого майна)
-            buildingData.add("null")                                // registrationDate
-            buildingData.add("null")                                // constructionReadiness
+                BalansIndex.registrationId.index)))           // registrationId - Реєстрація у Державному реєстрі (Реєстраційний номер об'єкту нерухомого майна)
+            buildingData.add("null")                               // registrationDate
+            buildingData.add("null")                               // constructionReadiness
             buildingData.add(setQuotation(row.getCell(
-                BalansIndex.condition.index)))               // condition - Стан об'єкту
-            buildingData.add("null")                                // utilitiesAvailable
+                BalansIndex.condition.index)))                // condition - Стан об'єкту
+            buildingData.add("null")                               // utilitiesAvailable
             buildingData.add(getDt8601(row.getCell(
-                BalansIndex.validityDate.index)))            // validityDate - Дата Актуальності
+                BalansIndex.validityDate.index)))             // validityDate - Дата Актуальності
             buildingData.add(row.getCell(
                 BalansIndex.destinationGroup.index)
-                .toString())                                        // destinationGroup - Група призначення
+                .toString())                                       // destinationGroup - Група призначення
 
             tabBuildings.put(buildingId, buildingData)
         }

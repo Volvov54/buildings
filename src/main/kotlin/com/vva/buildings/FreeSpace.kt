@@ -6,6 +6,7 @@ import com.vva.buildings.Utils.getQuotationString
 import com.vva.buildings.Utils.getTitleBuilding
 import com.vva.buildings.Utils.getUrl
 import com.vva.buildings.Utils.is634
+import com.vva.buildings.Utils.setQuotation
 import org.apache.poi.ss.usermodel.CellType
 import org.apache.poi.ss.usermodel.Row
 import org.apache.poi.xssf.usermodel.XSSFSheet
@@ -26,8 +27,11 @@ object FreeSpace {
             if (cellIdSpace.cellType != CellType.NUMERIC) continue // Skip empty rows
             val idSpace = formatToId(cellIdSpace) // ID вільного простору
 
-            val idBuilding = formatToId(row.getCell(
-                FreeSpaceIndex.buildingId.ordinal)) // ID об'єкту
+            val idBuilding = formatToId(
+                row.getCell(
+                    FreeSpaceIndex.buildingId.ordinal
+                )
+            ) // ID об'єкту
             val building = tabBuildings[idBuilding]
             if (building == null) {
                 println("Building with ID $idBuilding not found in tabBuildings")
@@ -38,7 +42,8 @@ object FreeSpace {
             }
 
             val cellEtcCode = row.getCell(
-                FreeSpaceIndex.etcCode.ordinal) // Унікальний код обєкту у ЕТС Прозорро-продажі
+                FreeSpaceIndex.etcCode.ordinal
+            ) // Унікальний код обєкту у ЕТС Прозорро-продажі
 
             if (cellEtcCode.cellType == CellType.STRING) {
                 val etcCode = getEtcCode(cellEtcCode.toString().trim())
@@ -68,7 +73,9 @@ object FreeSpace {
                 data.add(building[BuildingIndex.dk018classId.ordinal]) // dk018classId
                 data.add(building[BuildingIndex.dk018classDescription.ordinal]) // dk018classDescription
                 data.add(building[BuildingIndex.unitName.ordinal]) // unitName
-                data.add(row.getCell(FreeSpaceIndex.area.index).toString()) // buildingArea
+                data.add(
+                    setQuotation(row.getCell(FreeSpaceIndex.area.index))
+                ) // buildingArea
                 data.add(building[BuildingIndex.CATUTTC.ordinal]) // CATUTTC
                 data.add(building[BuildingIndex.addressPostCode.ordinal]) // addressPostCode
                 data.add(building[BuildingIndex.addressAdminUnitL1.ordinal]) // addressAdminUnitL1
@@ -78,7 +85,9 @@ object FreeSpace {
                 data.add(building[BuildingIndex.addressPostName.ordinal]) // addressPostName
                 data.add(building[BuildingIndex.addressPostDistrict.ordinal]) // addressPostDistrict
                 data.add(building[BuildingIndex.addressPostStreet.ordinal]) // addressPostStreet
-                data.add(building[BuildingIndex.addressLocatorDesignator.ordinal]) // addressLocatorDesignator
+                data.add(
+                    setQuotation(row.getCell(FreeSpaceIndex.addressLocatorDesignator.index))
+                ) // addressLocatorDesignator
                 data.add(building[BuildingIndex.addressLocatorBuilding.ordinal]) // addressLocatorBuilding
                 data.add(building[BuildingIndex.addressLocatorName.ordinal]) // addressLocatorName
                 data.add(building[BuildingIndex.registrationStatus.ordinal]) // registrationStatus
@@ -88,14 +97,30 @@ object FreeSpace {
                 data.add(building[BuildingIndex.condition.ordinal]) // condition
                 data.add(building[BuildingIndex.utilitiesAvailable.ordinal]) // utilitiesAvailable
                 data.add(building[BuildingIndex.validityDate.ordinal]) // validityDate
-                data.add(getValueBool(row,
-                    FreeSpaceIndex.utilitiesAvailableWaterSupply.index)) // utilitiesAvailableWaterSupply
-                data.add(getValueBool(row,
-                    FreeSpaceIndex.utilitiesAvailableHeatingSupply.index)) // utilitiesAvailableHeatingSupply
-                data.add(getValueStr(row,
-                    FreeSpaceIndex.utilitiesAvailableElectricNetwork.index)) // utilitiesAvailableElectricNetwork
-                data.add(getValueBool(row,
-                    FreeSpaceIndex.utilitiesAvailableGasSupply.index)) // utilitiesAvailableGasSupply
+                data.add(
+                    getValueBool(
+                        row,
+                        FreeSpaceIndex.utilitiesAvailableWaterSupply.index
+                    )
+                ) // utilitiesAvailableWaterSupply
+                data.add(
+                    getValueBool(
+                        row,
+                        FreeSpaceIndex.utilitiesAvailableHeatingSupply.index
+                    )
+                ) // utilitiesAvailableHeatingSupply
+                data.add(
+                    getValueStr(
+                        row,
+                        FreeSpaceIndex.utilitiesAvailableElectricNetwork.index
+                    )
+                ) // utilitiesAvailableElectricNetwork
+                data.add(
+                    getValueBool(
+                        row,
+                        FreeSpaceIndex.utilitiesAvailableGasSupply.index
+                    )
+                ) // utilitiesAvailableGasSupply
 
                 tabBuildings2.add(data)
             }

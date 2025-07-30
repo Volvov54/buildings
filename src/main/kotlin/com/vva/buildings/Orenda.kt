@@ -1,11 +1,13 @@
 package com.vva.buildings
 
-import com.vva.buildings.FreeSpace.tabProzoro
 import com.vva.buildings.Utils.formatToId
+import com.vva.buildings.Utils.getCurrencyValue
 import com.vva.buildings.Utils.getDt8601
 import com.vva.buildings.Utils.getEtcCode
 import com.vva.buildings.Utils.getTitleBuilding
 import com.vva.buildings.Utils.getUrl
+import com.vva.buildings.Utils.is634m
+import com.vva.buildings.Utils.setQuotation
 import org.apache.poi.ss.usermodel.CellType
 import org.apache.poi.xssf.usermodel.XSSFSheet
 import org.slf4j.Logger
@@ -14,7 +16,7 @@ import org.slf4j.LoggerFactory
 object Orenda {
     val logger: Logger = LoggerFactory.getLogger(Orenda::class.java)
 
-    val tabListProzoro = mutableListOf<List<String>>()
+    val tabListProzzoro = mutableListOf<List<String>>()
     val tabList = mutableListOf<List<String>>()
 
     fun createOrendaTabs(
@@ -22,7 +24,7 @@ object Orenda {
         sheet: XSSFSheet
     ) {
         logger.info("Start creating Orenda tabs")
-        tabListProzoro.clear()
+        tabListProzzoro.clear()
         tabList.clear()
 
         val rowIterator = sheet.iterator()
@@ -39,25 +41,29 @@ object Orenda {
             val idBuildingArray = idBuildingCell.toString()
             if (idBuildingArray.isNullOrBlank()) {
                 val msg = "ID об'єкту порожній у рядку ${row.rowNum}, idOrenda: $idOrenda"
-//                println(msg)
-                logger.info(msg)
+                logger.warn(msg)
                 continue
             }
             val idBuildings = idBuildingArray.split(";").map { it.trim() }
+//            logger.warn("idBuildings: $idBuildings, idOrenda: $idOrenda")
             val idBuilding = idBuildings[0] // Беремо перший ID об'єкту
 
             val building = tabBuildings[idBuilding]
             if (building == null) {
-                val msg = "Building with ID ${idBuildings[0]} not found in tabBuildings, idOrenda: $idOrenda"
-//                println(msg)
-                logger.info(msg)
+                val msg =
+                    "Building with ID ${idBuildings[0]} not found in tabBuildings, idOrenda: $idOrenda"
+                logger.warn(msg)
                 continue
             }
-//            if ()
+            if (is634m(tabBuildings, idBuildings)) {
+//                logger.warn("Skipping building with ID $idBuildings as it is 634 code")
+                continue
+            }
 
             val cellEtcCode =
                 row.getCell(OrendaIndex.etcCode.index) // Унікальний код обєкту у ЕТС Прозорро-продажі
             if (cellEtcCode.cellType == CellType.STRING) {
+//                logger.warn("Etc code is STRING: $cellEtcCode")
                 val etcCode = getEtcCode(cellEtcCode.toString().trim())
                 val url = getUrl(etcCode)
                 val title = getTitleBuilding(tabBuildings, idBuilding)
@@ -67,146 +73,97 @@ object Orenda {
                 data.add(title)   // title - Назва об'єкту
                 data.add(url)     // url - Унікальний код обєкту у ЕТС Прозорро-продажі
 
-                tabProzoro.add(data)
+                tabListProzzoro.add(data)
             } else {
                 val data = mutableListOf<String>()
-//                data.add(idOrenda) // id - ID договору оренди
-                data.add("4444")
-                data.add(building[BuildingIndex.title.ordinal]) // title - Назва об'єкту
-                data.add(building[BuildingIndex.description.ordinal]) // description - Призначення
-                data.add(building[BuildingIndex.CATUTTC.ordinal]) // CATUTTC - Код територіальної громади
-                data.add(building[BuildingIndex.addressPostCode.ordinal]) // addressPostCode - Поштовий індекс
+                data.add("$idOrenda-$idBuilding") // id - ID договору оренди
+                data.add(building[BuildingIndex.title.index]) // title - Назва об'єкту
+                data.add(building[BuildingIndex.description.index]) // description - Призначення
+                data.add(building[BuildingIndex.CATUTTC.index]) // CATUTTC - Код територіальної громади
+                data.add(building[BuildingIndex.addressPostCode.index]) // addressPostCode - Поштовий індекс
                 data.add(
-                    building[
-                        BuildingIndex.addressAdminUnitL1.ordinal]
+                    building[BuildingIndex.addressAdminUnitL1.index]
                 ) // addressAdminUnitL1 - Адміністративна одиниця 1 рівня
                 data.add(
-                    building[
-                        BuildingIndex.addressAdminUnitL2.ordinal]
+                    building[BuildingIndex.addressAdminUnitL2.index]
                 ) // addressAdminUnitL2 - Адміністративна одиниця 2 рівня
                 data.add(
-                    building[
-                        BuildingIndex.addressAdminUnitL3.ordinal]
+                    building[BuildingIndex.addressAdminUnitL3.index]
                 ) // addressAdminUnitL3 - Адміністративна одиниця 3 рівня
                 data.add(
-                    building[
-                        BuildingIndex.addressAdminUnitL4.ordinal]
+                    building[BuildingIndex.addressAdminUnitL4.index]
                 ) // addressAdminUnitL4 - Адміністративна одиниця 4 рівня
                 data.add(
-                    building[
-                        BuildingIndex.addressPostName.ordinal]
+                    building[BuildingIndex.addressPostName.index]
                 ) // addressPostName - Назва населеного пункту
                 data.add(
-                    building[
-                        BuildingIndex.addressPostDistrict.ordinal]
+                    building[BuildingIndex.addressPostDistrict.index]
                 ) // addressPostDistrict - Район населеного пункту
                 data.add(
-                    building[
-                        BuildingIndex.addressPostStreet.ordinal]
+                    building[BuildingIndex.addressPostStreet.index]
                 ) // addressPostStreet - Вулиця населеного пункту
                 data.add(
-                    building[
-                        BuildingIndex.addressLocatorDesignator.ordinal]
+                    setQuotation(row.getCell(OrendaIndex.addressLocatorDesignator.index))
                 ) // addressLocatorDesignator - Позначення будівлі/споруди
                 data.add(
-                    building[
-                        BuildingIndex.addressLocatorBuilding.ordinal]
+                    building[BuildingIndex.addressLocatorBuilding.index]
                 ) // addressLocatorBuilding - Номер будівлі/споруди
                 data.add(
-                    building[
-                        BuildingIndex.addressLocatorName.ordinal]
+                    building[BuildingIndex.addressLocatorName.index]
                 ) // addressLocatorName - Назва будівлі/споруди
                 data.add(
-                    building[
-                        BuildingIndex.unitName.ordinal]
+                    building[BuildingIndex.unitName.index]
                 ) // unitName - Одиниця виміру площі
                 data.add(
-                    row.getCell(
-                        OrendaIndex.quantity.index
-                    ).toString()
+                    row.getCell(OrendaIndex.quantity.index).toString()
                 ) // quantity - Площа приміщення, що використовується, кв.м
                 data.add(
-                    row.getCell(
-                        OrendaIndex.valuationDate.index
-                    ).toString()
-                ) // valuationDate - Дата, на яку проведена оцінка об'єкту
-                data.add(
-                    row.getCell(
-                        OrendaIndex.valueAmount.index
-                    ).toString()
+                    getCurrencyValue(row.getCell(OrendaIndex.valueAmount.index))
                 ) // valueAmount - Оціночна вартість приміщень за договором, грн
                 data.add("UAH") // currencyCode - Код валюти
                 data.add(
-                    getDt8601(
-                        row.getCell(
-                            OrendaIndex.valuationDate.index
-                        )
-                    )
+                    getDt8601(row.getCell(OrendaIndex.valuationDate.index))
                 ) // valuationDate - Дата, на яку проведена оцінка об'єкту
                 data.add(
-                    row.getCell(
-                        OrendaIndex.contractNumber.index
-                    ).toString()
+                    setQuotation(row.getCell(OrendaIndex.contractNumber.index))
                 ) // contractNumber - Номер Договору Оренди
                 data.add(
-                    getDt8601(
-                        row.getCell(
-                            OrendaIndex.contractDateSigned.index
-                        )
-                    )
+                    getDt8601(row.getCell(OrendaIndex.contractDateSigned.index))
                 ) // contractDateSigned - Дата укладання договору
                 data.add("null") // contractUrl - URL договору (не вказано в даних)
                 data.add(
-                    row.getCell(
-                        OrendaIndex.contractStatus.index
-                    ).toString()
+                    setQuotation(row.getCell(OrendaIndex.contractStatus.index))
                 ) // contractStatus - Стан договору
                 data.add("null") // contractPurpose - Цільове призначення (не вказано в даних)
                 data.add("null") // contractRentalRate - Орендна ставка (не вказано в даних)
                 data.add(
-                    row.getCell(
-                        OrendaIndex.contractCustodianName.index
-                    ).toString()
+                    setQuotation(row.getCell(OrendaIndex.contractCustodianName.index))
                 ) // contractCustodianName - Балансоутримувач - Повна Назва
                 data.add(
-                    row.getCell(
-                        OrendaIndex.contractCustodianId.index
-                    ).toString()
+                    setQuotation(row.getCell(OrendaIndex.contractCustodianId.index))
                 ) // contractCustodianId - Балансоутримувач - Код ЄДРПОУ
-//                println("contractUserName: ${row.getCell(OrendaIndex.contractUserName.index)}")
                 data.add(
-                    row.getCell(
-                        OrendaIndex.contractUserName.index
-                    ).toString()
+                    setQuotation(row.getCell(OrendaIndex.contractUserName.index))
                 ) // contractUserName - Орендар - Повна Назва
                 data.add(
-                    row.getCell(
-                        OrendaIndex.contractUserId.index
-                    ).toString()
+                    setQuotation(row.getCell(OrendaIndex.contractUserId.index))
                 ) // contractUserId - Орендар - Код ЄДРПОУ
                 data.add(
-                    getDt8601(
-                        row.getCell(
-                            OrendaIndex.contractPeriodStartDate.index
-                        )
-                    )
+                    getDt8601(row.getCell(OrendaIndex.contractPeriodStartDate.index))
                 ) // contractPeriodStartDate - Початок оренди
                 data.add(
-                    getDt8601(
-                        row.getCell(
-                            OrendaIndex.contractPeriodEndDate.index
-                        )
-                    )
+                    getDt8601(row.getCell(OrendaIndex.contractPeriodEndDate.index))
                 ) // contractPeriodEndDate - Закінченя оренди
                 data.add("null") // contractPeriodMaxExtentDate - Максимальна дата оренди (не вказано в даних)
                 data.add("null") // contractSchedule - Графік оренди (не вказано в даних)
                 data.add("Місяць") // contractValuePeriod - Період вартості
                 data.add(
-                    row.getCell(
-                        OrendaIndex.contractValueAmount.index
-                    ).toString()
+                    getCurrencyValue(row.getCell(OrendaIndex.contractValueAmount.index))
                 ) // contractValueAmount - Сума вартості договору
                 data.add("null") // contractValueDescription - Опис вартості договору (не вказано в даних)
+                data.add(
+                    getDt8601(row.getCell(OrendaIndex.validityDate.index))
+                ) // validityDate - Дата Актуальності
 
                 tabList.add(data)
             }
@@ -218,7 +175,7 @@ object Orenda {
         Utils.getCsvString(headerList, tabList)
 
     fun getListProzorroSalesCsv() =
-        Utils.getCsvString(headerListProzorroSales, tabListProzoro)
+        Utils.getCsvString(headerListProzorroSales, tabListProzzoro)
 
     val headerListProzorroSales = arrayOf(
         "ocid",
@@ -263,5 +220,6 @@ object Orenda {
         "contractValuePeriod",
         "contractValueAmount",
         "contractValueDescription",
+        "validityDate",
     )
 }

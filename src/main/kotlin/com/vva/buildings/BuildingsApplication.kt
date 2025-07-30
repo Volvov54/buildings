@@ -7,7 +7,6 @@ import com.vva.buildings.FreeSpace.getBuldins2Csv
 import com.vva.buildings.FreeSpace.getProzorroCsv
 import com.vva.buildings.ServiceXlsx.getWorkbook
 import com.vva.buildings.Utils.is634
-import com.vva.buildings.Utils.isNotKyiv
 import org.springframework.boot.CommandLineRunner
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
@@ -34,10 +33,10 @@ class BuildingsApplication : CommandLineRunner {
         val sheetBalans = workbookBalans.getSheetAt(0)
         val tabBuildings = getTabBalans(sheetBalans)
 
-        val list634 = tabBuildings.values.filter { b ->
-            is634(b[BuildingIndex.destinationGroup.index].toString())
-        }
-        println("Total buildings with 634 code: ${list634.size}")
+//        val list634 = tabBuildings.values.filter { b ->
+//            is634(b[BuildingIndex.destinationGroup.index].toString())
+//        }
+//        println("Total buildings with 634 code: ${list634.size}")
 
         val balansCsv = getBalansCsv(tabBuildings)
         saveCsvFile(balansCsv, pathOutputBuildings)
