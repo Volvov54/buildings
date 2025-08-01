@@ -10,14 +10,19 @@ import com.vva.buildings.Utils.setQuotation
 import org.apache.poi.ss.usermodel.CellType
 import org.apache.poi.ss.usermodel.Row
 import org.apache.poi.xssf.usermodel.XSSFSheet
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 object FreeSpace {
+    val logger: Logger = LoggerFactory.getLogger(FreeSpace::class.java)
+
     val tabProzoro = mutableListOf<List<String>>()
     val tabBuildings2 = mutableListOf<List<String>>()
 
     fun createFreeSpaceTabs(tabBuildings: Map<String, List<String>>, sheet: XSSFSheet) {
         tabProzoro.clear()
         tabBuildings2.clear()
+        var count634 = 0
         val rowIterator = sheet.iterator()
         while (rowIterator.hasNext()) {
             val row = rowIterator.next()
@@ -34,10 +39,12 @@ object FreeSpace {
             ) // ID об'єкту
             val building = tabBuildings[idBuilding]
             if (building == null) {
-                println("Building with ID $idBuilding not found in tabBuildings")
+                logger.info("Building with ID $idBuilding not found in tabBuildings")
                 continue
             }
             if (is634(building[BuildingIndex.destinationGroup.ordinal].toString())) {
+                count634++
+                logger.info("Skipping building with ID $idBuilding for freeSpace ID $idSpace due to 634 code")
                 continue // Skip buildings with 634 code
             }
 
@@ -125,6 +132,7 @@ object FreeSpace {
                 tabBuildings2.add(data)
             }
         }
+        println("FreeSpace: Total buildings with 634 code skipped: $count634")
     }
 
     private fun getValueStr(row: Row, index: Int): String {

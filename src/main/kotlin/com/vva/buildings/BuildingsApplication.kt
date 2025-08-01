@@ -16,15 +16,18 @@ import java.nio.file.Path
 
 @SpringBootApplication
 class BuildingsApplication : CommandLineRunner {
-    val pathInputBalans = "Balans.xlsx"
-    val pathInputFreeSpace = "FreeSpace.xlsx"
-    val pathInputOrenda = "orenda.xlsx"
-    val pathOutputBuildings = FileSystems.getDefault().getPath("buildings.csv")
-    val pathOutputBuildings2 = FileSystems.getDefault().getPath("buildings2.csv")
-    val pathOutputProzorro = FileSystems.getDefault().getPath("listProzorroSales.csv")
-    val pathOutputList = FileSystems.getDefault().getPath("list.csv")
+    val pathInputBalans = "data/input/Баланс.xlsx"
+    val pathInputFreeSpace = "data/input/ВільніПлощі.xlsx"
+    val pathInputOrenda = "data/input/Оренда.xlsx"
+    val pathOutputBuildings =
+        FileSystems.getDefault().getPath("data/output/buildings.csv")
+    val pathOutputBuildings2 =
+        FileSystems.getDefault().getPath("data/output/buildings2.csv")
+    val pathOutputProzorro =
+        FileSystems.getDefault().getPath("data/output/listProzorroSales.csv")
+    val pathOutputList = FileSystems.getDefault().getPath("data/output/list.csv")
     val pathOutputListProzorroSales =
-        FileSystems.getDefault().getPath("listProzorroSales2.csv")
+        FileSystems.getDefault().getPath("data/output/listProzorroSales2.csv")
 
     override fun run(vararg args: String?) {
         // Initialization logic can be added here if needed

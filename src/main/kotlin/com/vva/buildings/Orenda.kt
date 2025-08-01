@@ -164,6 +164,9 @@ object Orenda {
                 data.add(
                     getDt8601(row.getCell(OrendaIndex.validityDate.index))
                 ) // validityDate - Дата Актуальності
+                data.add(
+                    getDt8601(row.getCell(OrendaIndex.contractFactPeriodEndDate.index))
+                ) // contractFactPeriodEndDate - Фактичне закінченя оренди
 
                 tabList.add(data)
             }
@@ -221,5 +224,6 @@ object Orenda {
         "contractValueAmount",
         "contractValueDescription",
         "validityDate",
+        "contractFactPeriodEndDate",
     )
 }

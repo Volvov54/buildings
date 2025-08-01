@@ -3,7 +3,7 @@ package com.vva.buildings
 enum class OrendaIndex(val index: Int) {
     id(0),          // ID
     idBuilding(1),  // ID об'єкту
-    etcCode(2),
+    etcCode(2), //
     quantity(3),    // Площа приміщення, що використовується, кв.м
     valueAmount(4), // Оціночна вартість приміщень за договором, грн
     valuationDate(5), // Дата, на яку проведена оцінка об'єкту
@@ -19,4 +19,5 @@ enum class OrendaIndex(val index: Int) {
     contractUserId(15), // Орендар - Код ЄДРПОУ
     addressLocatorDesignator(16), // Номер будинку
     validityDate(17), // Дата Актуальності
+    contractFactPeriodEndDate(18), // Фактичне закінченя оренди
 }
