@@ -6,7 +6,6 @@ import com.vva.buildings.FreeSpace.createFreeSpaceTabs
 import com.vva.buildings.FreeSpace.getBuldins2Csv
 import com.vva.buildings.FreeSpace.getProzorroCsv
 import com.vva.buildings.ServiceXlsx.getWorkbook
-import com.vva.buildings.Utils.is634
 import org.springframework.boot.CommandLineRunner
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
@@ -22,12 +21,16 @@ class BuildingsApplication : CommandLineRunner {
     val pathOutputBuildings =
         FileSystems.getDefault().getPath("data/output/buildings.csv")
     val pathOutputBuildings2 =
-        FileSystems.getDefault().getPath("data/output/buildings2.csv")
+        FileSystems.getDefault().getPath(
+            "data/output/buildingsRentable.csv")
     val pathOutputProzorro =
-        FileSystems.getDefault().getPath("data/output/listProzorroSales.csv")
-    val pathOutputList = FileSystems.getDefault().getPath("data/output/list.csv")
+        FileSystems.getDefault().getPath(
+            "data/output/listProzorroSales_buildingsRentable.csv")
+    val pathOutputList =
+        FileSystems.getDefault().getPath("data/output/list.csv")
     val pathOutputListProzorroSales =
-        FileSystems.getDefault().getPath("data/output/listProzorroSales2.csv")
+        FileSystems.getDefault().getPath(
+            "data/output/listProzorroSales_rented.csv")
 
     override fun run(vararg args: String?) {
         // Initialization logic can be added here if needed
