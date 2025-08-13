@@ -6,6 +6,7 @@ import com.vva.buildings.FreeSpace.createFreeSpaceTabs
 import com.vva.buildings.FreeSpace.getBuldins2Csv
 import com.vva.buildings.FreeSpace.getProzorroCsv
 import com.vva.buildings.ServiceXlsx.getWorkbook
+import org.slf4j.LoggerFactory
 import org.springframework.boot.CommandLineRunner
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
@@ -15,6 +16,8 @@ import java.nio.file.Path
 
 @SpringBootApplication
 class BuildingsApplication : CommandLineRunner {
+    private val logger = LoggerFactory.getLogger(BuildingsApplication::class.java)
+
     val pathInputBalans = "data/input/Баланс.xlsx"
     val pathInputFreeSpace = "data/input/ВільніПлощі.xlsx"
     val pathInputOrenda = "data/input/Оренда.xlsx"
@@ -38,6 +41,7 @@ class BuildingsApplication : CommandLineRunner {
         val workbookBalans = getWorkbook(pathInputBalans)
         val sheetBalans = workbookBalans.getSheetAt(0)
         val tabBuildings = getTabBalans(sheetBalans)
+        logger.info("Total buildings in tab: ${tabBuildings.size}")
 
 //        val list634 = tabBuildings.values.filter { b ->
 //            is634(b[BuildingIndex.destinationGroup.index].toString())

@@ -18,4 +18,5 @@ enum class BalansIndex(val index: Int) {
     condition(14),            // Стан об'єкту
     validityDate(15),         // Дата Актуальності
     destinationGroup(16),     // Група призначення
+    addressLocatorDesignator(17), // Номер будинку
 }
