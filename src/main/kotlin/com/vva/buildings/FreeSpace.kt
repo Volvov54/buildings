@@ -5,7 +5,6 @@ import com.vva.buildings.Utils.getEtcCode
 import com.vva.buildings.Utils.getQuotationString
 import com.vva.buildings.Utils.getTitleBuilding
 import com.vva.buildings.Utils.getUrl
-import com.vva.buildings.Utils.is634
 import com.vva.buildings.Utils.setQuotation
 import org.apache.poi.ss.usermodel.CellType
 import org.apache.poi.ss.usermodel.Row
@@ -16,11 +15,11 @@ import org.slf4j.LoggerFactory
 object FreeSpace {
     val logger: Logger = LoggerFactory.getLogger(FreeSpace::class.java)
 
-    val tabProzoro = mutableListOf<List<String>>()
+    val tabProzorro = mutableListOf<List<String>>()
     val tabBuildings2 = mutableListOf<List<String>>()
 
     fun createFreeSpaceTabs(tabBuildings: Map<String, List<String>>, sheet: XSSFSheet) {
-        tabProzoro.clear()
+        tabProzorro.clear()
         tabBuildings2.clear()
         var count634 = 0
         val rowIterator = sheet.iterator()
@@ -42,11 +41,11 @@ object FreeSpace {
                 logger.info("Building with ID $idBuilding not found in tabBuildings")
                 continue
             }
-            if (is634(building[BuildingIndex.destinationGroup.ordinal].toString())) {
-                count634++
-                logger.info("Skipping building with ID $idBuilding for freeSpace ID $idSpace due to 634 code")
-                continue // Skip buildings with 634 code
-            }
+//            if (is634(building[BuildingIndex.destinationGroup.ordinal].toString())) {
+//                count634++
+//                logger.info("Skipping building with ID $idBuilding for freeSpace ID $idSpace due to 634 code")
+//                continue // Skip buildings with 634 code
+//            }
 
             val cellEtcCode = row.getCell(
                 FreeSpaceIndex.etcCode.ordinal
@@ -62,7 +61,7 @@ object FreeSpace {
                 data.add(title)   // title - Назва об'єкту
                 data.add(url)     // url - Унікальний код обєкту у ЕТС Прозорро-продажі
 
-                tabProzoro.add(data)
+                tabProzorro.add(data)
             } else {
                 val data = mutableListOf<String>()
                 data.add("$idSpace-$idBuilding") // buildingId
@@ -132,7 +131,8 @@ object FreeSpace {
                 tabBuildings2.add(data)
             }
         }
-        println("FreeSpace: Total buildings with 634 code skipped: $count634")
+        logger.info("Free spaces prozorro: ${tabProzorro.size} - buildings2: ${tabBuildings2.size}")
+        logger.info("Total free spaces buildings: ${tabBuildings2.size+tabProzorro.size}")
     }
 
     private fun getValueStr(row: Row, index: Int): String {
@@ -149,7 +149,7 @@ object FreeSpace {
     }
 
     fun getProzorroCsv(): String =
-        Utils.getCsvString(headerProzorro, tabProzoro)
+        Utils.getCsvString(headerProzorro, tabProzorro)
 
     fun getBuldins2Csv(): String =
         Utils.getCsvString(headerBuildings2, tabBuildings2)
