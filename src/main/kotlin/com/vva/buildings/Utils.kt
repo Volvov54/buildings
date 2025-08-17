@@ -45,6 +45,15 @@ object Utils {
         }
     }
 
+    fun getNotPrivate(contractUserId: String): String {
+        println("getNotPrivate: $contractUserId length = ${contractUserId.length}")
+        return if (contractUserId.length  == 10) {
+            "XXXXXXXXXX" // Masking private person ID
+        } else {
+            contractUserId
+        }
+    }
+
     fun getDt8601(cell: Cell): String {
         if (cell.cellType == CellType.BLANK) {
             return "null"

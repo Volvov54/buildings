@@ -4,6 +4,8 @@ import com.vva.buildings.Utils.formatToId
 import com.vva.buildings.Utils.getCurrencyValue
 import com.vva.buildings.Utils.getDt8601
 import com.vva.buildings.Utils.getEtcCode
+import com.vva.buildings.Utils.getNotPrivate
+import com.vva.buildings.Utils.getQuotationString
 import com.vva.buildings.Utils.getTitleBuilding
 import com.vva.buildings.Utils.getUrl
 import com.vva.buildings.Utils.is634m
@@ -37,6 +39,10 @@ object Orenda {
             if (cellIdOrenda.cellType != CellType.NUMERIC) continue
             val idOrenda = formatToId(cellIdOrenda) // ID договору оренди
 
+            val cellContractStatus = row.getCell(OrendaIndex.contractStatus.index)
+            val contractStatus = cellContractStatus.toString().trim()
+            if (!contractStatus.equals("Договір діє")) continue
+
             val idBuildingCell = row.getCell(OrendaIndex.idBuilding.index) // cell ID об'єкту
             val idBuildingArray = idBuildingCell.toString()
             if (idBuildingArray.isNullOrBlank()) {
@@ -44,6 +50,7 @@ object Orenda {
                 logger.warn(msg)
                 continue
             }
+
             val idBuildings = idBuildingArray.split(";").map { it.trim() }
 //            logger.warn("idBuildings: $idBuildings, idOrenda: $idOrenda")
             val idBuilding = idBuildings[0] // Беремо перший ID об'єкту
@@ -62,6 +69,7 @@ object Orenda {
 
             val cellEtcCode =
                 row.getCell(OrendaIndex.etcCode.index) // Унікальний код обєкту у ЕТС Прозорро-продажі
+
             if (cellEtcCode.cellType == CellType.STRING) {
 //                logger.warn("Etc code is STRING: $cellEtcCode")
                 val etcCode = getEtcCode(cellEtcCode.toString().trim())
@@ -146,7 +154,9 @@ object Orenda {
                     setQuotation(row.getCell(OrendaIndex.contractUserName.index))
                 ) // contractUserName - Орендар - Повна Назва
                 data.add(
-                    setQuotation(row.getCell(OrendaIndex.contractUserId.index))
+                    getQuotationString(
+                        getNotPrivate(row.getCell(
+                            OrendaIndex.contractUserId.index).toString()))
                 ) // contractUserId - Орендар - Код ЄДРПОУ
                 data.add(
                     getDt8601(row.getCell(OrendaIndex.contractPeriodStartDate.index))
@@ -164,13 +174,15 @@ object Orenda {
                 data.add(
                     getDt8601(row.getCell(OrendaIndex.validityDate.index))
                 ) // validityDate - Дата Актуальності
-                data.add(
-                    getDt8601(row.getCell(OrendaIndex.contractFactPeriodEndDate.index))
-                ) // contractFactPeriodEndDate - Фактичне закінченя оренди
+//                data.add(
+//                    getDt8601(row.getCell(OrendaIndex.contractFactPeriodEndDate.index))
+//                ) // contractFactPeriodEndDate - Фактичне закінченя оренди
 
                 tabList.add(data)
             }
         }
+        logger.info("Orenda tabList size: ${tabList.size} - tabListProzzoro size: ${tabListProzzoro.size}")
+        logger.info("Total size of Orenda tabs: ${tabList.size + tabListProzzoro.size}")
         logger.info("Finished creating Orenda tabs")
     }
 
