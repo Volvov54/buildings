@@ -25,6 +25,10 @@ object Balans {
             val balanceHolderId = cellBalanceHolderId.toString().trim()
             if (balanceHolderId.equals("22991617")) continue
 
+            val cellFieldOfActivity = row.getCell(BalansIndex.fieldOfActivity.index)
+            val fieldOfActivity = cellFieldOfActivity.toString().trim()
+            if (fieldOfActivity.equals("Невизначені")) continue
+
             val cellIndex = row.getCell(BalansIndex.id.index)
             if (cellIndex.cellType != CellType.NUMERIC) continue
             val buildingId = formatToId(cellIndex)
@@ -132,14 +136,15 @@ object Balans {
                     )
                 )
             )        // addressPostStreet - Назва Вулиці
-            buildingData.add(
-                getAddressBuilding(
-                    balanceHolderId,
-                    row.getCell(
-                        BalansIndex.addressLocatorDesignator.index
-                    ).toString().trim()
-                )
-            )                                // addressLocatorDesignator - Номер Будинку
+            buildingData.add("XXX")                                // addressLocatorDesignator - Номер Будинку
+//            buildingData.add(
+//                getAddressBuilding(
+//                    balanceHolderId,
+//                    row.getCell(
+//                        BalansIndex.addressLocatorDesignator.index
+//                    ).toString().trim()
+//                )
+//            )                                // addressLocatorDesignator - Номер Будинку
             buildingData.add("null")                               // addressLocatorBuilding
             buildingData.add("null")                               // addressLocatorName
             buildingData.add(
