@@ -66,6 +66,7 @@ class BuildingsApplication : CommandLineRunner {
         Orenda.createOrendaTabs(tabBuildings, sheetOrenda)
 
         val listCsv = Orenda.getListCsv()
+        println("Count listCsv: ${listCsv.length}")
         saveCsvFile(listCsv, pathOutputList)
 
         val listProzorroSalesCsv = Orenda.getListProzorroSalesCsv()

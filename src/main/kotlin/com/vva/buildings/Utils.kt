@@ -23,56 +23,30 @@ object Utils {
         }
     }
 
-    fun getCurrencyValue(cell: Cell): String {
-        return if (cell.cellType == CellType.NUMERIC) {
-            val decimalFormat = DecimalFormat("#,##0.00")
-            val d = decimalFormat.format(cell.numericCellValue)
-            if (d.isNotBlank()) {
-                d.replace(",", ".") // Replace comma with dot for decimal
-            } else {
-                "0.00"
-            }
-        } else {
+    fun getCurrencyValue(cell: Cell): String =
+        if (cell.cellType == CellType.NUMERIC)
+            DecimalFormat("#,##0.00").format(cell.numericCellValue).replace(",", ".")
+        else
             "0.00"
-        }
+
+    fun getStatus(cell: Cell): String =
+        if (cell.cellType == CellType.BLANK) "Невідомо" else "Зареєстровано"
+
+    fun getNotPrivate(contractUserId: String): String =
+        if (contractUserId.length == 10) "XXXXXXXXXX" else contractUserId
+
+    fun getDt8601(cell: Cell): String = when (cell.cellType) {
+        CellType.BLANK -> "null"
+        CellType.STRING -> cell.toString()
+        else -> SimpleDateFormat("yyyy-MM-dd").format(cell.dateCellValue)
     }
 
-    fun getStatus(cell: Cell): String {
-        return if (cell.cellType == CellType.BLANK) {
-            "Невідомо"
-        } else {
-            "Зареєстровано"
-        }
-    }
-
-    fun getNotPrivate(contractUserId: String): String {
-        return if (contractUserId.length  == 10) {
-            "XXXXXXXXXX" // Masking private person ID
-        } else {
-            contractUserId
-        }
-    }
-
-    fun getDt8601(cell: Cell): String {
-        if (cell.cellType == CellType.BLANK) {
-            return "null"
-        } else if (cell.cellType == CellType.STRING) {
-            return cell.toString()
-        } else {
-            val dt = cell.dateCellValue
-            val formatOut = SimpleDateFormat("yyyy-MM-dd")
-            return formatOut.format(dt)
-        }
-    }
-
-    fun formatToId(cell: Cell): String {
-        val decimalFormat = DecimalFormat("#")
-        return decimalFormat.format(cell.numericCellValue)
-    }
+    fun formatToId(cell: Cell): String = DecimalFormat("#").format(cell.numericCellValue)
 
     fun getCsvString(header: Array<String>, tab: List<List<String>>): String {
         val sb = StringBuilder()
         sb.append(header.joinToString(",")).append("\n") // Header for the CSV
+        println("Count tab: ${tab.size}")
         for (data in tab) {
             sb.append(data.joinToString(",")).append("\n")
         }
@@ -82,33 +56,21 @@ object Utils {
     fun getEtcCode(code: String): String {
         if (code.startsWith("http") || code.startsWith("hhttp")) {
             val parts = code.split("/")
-            if (parts.last().length < 2) {
-                return parts.get(parts.size - 2)
-            }
-            return parts.last() // Extract the last part of the URL
+            return if (parts.last().length < 2) parts[parts.size - 2] else parts.last()
         }
-        else return code
+        return code
     }
 
-    fun getUrl(etcCode: String): String {
-        when (etcCode.slice(0..1)) {
-            "LL" -> return "https://prozorro.sale/auction/$etcCode"
-            "UA" -> return "https://prozorro.sale/auction/$etcCode"
-            "RG" -> return "https://prozorro.sale/planning/$etcCode"
-            else -> return etcCode
-        }
+    fun getUrl(etcCode: String): String = when (etcCode.slice(0..1)) {
+        "LL", "UA" -> "https://prozorro.sale/auction/$etcCode"
+        "RG" -> "https://prozorro.sale/planning/$etcCode"
+        else -> etcCode
     }
 
     fun getTitleBuilding(
         tabBuildings: Map<String, List<String>>,
         idBuilding: String
-    ): String {
-        return if (tabBuildings.containsKey(idBuilding)) {
-            tabBuildings[idBuilding]?.get(BuildingIndex.title.ordinal) ?: "Невідомо" // Назва об'єкту
-        } else {
-            "Невідомо"
-        }
-    }
+    ): String = tabBuildings[idBuilding]?.get(BuildingIndex.title.index) ?: "Невідомо"
 
     fun is634(destinationGroup: String): Boolean {
         return destinationGroup.contains("634")
@@ -117,27 +79,16 @@ object Utils {
     fun is634m(
         tabBuildings: Map<String, List<String>>,
         idBuildings: List<String>
-    ): Boolean {
-        idBuildings.forEach { id ->
-            if (tabBuildings.containsKey(id)) {
-                val destinationGroup = tabBuildings[id]?.get(BuildingIndex.destinationGroup.ordinal)
-                if (destinationGroup != null && is634(destinationGroup)) {
-                    return true
-                }
-            }
-        }
-        return false
+    ): Boolean = idBuildings.any { id ->
+        tabBuildings[id]?.get(BuildingIndex.destinationGroup.index)?.let { is634(it) } == true
     }
 
     fun isNotKyiv(address: String): Boolean {
-        val _address = address.lowercase().trim()
-        if (_address == "КИЄВО-СВЯТОШИНСЬКИЙ".lowercase()) {
-            return true
-        }
-        return KyivDestrict.find { it in _address }.isNullOrBlank()
+        val normalized = address.lowercase().trim()
+        return normalized == "києво-святошинський" || KyivDistrict.none { it in normalized }
     }
 
-    val KyivDestrict = listOf(
+    val KyivDistrict = listOf(
         "голосіївський",
         "дарницький",
         "деснянський",
@@ -150,12 +101,9 @@ object Utils {
         "солом'янський",
     )
 
-    fun isBalanceHolderClosed(balanceHolderId: String): Boolean {
-        return if (clBalansHolder.contains(balanceHolderId)) true
-        else false
-    }
+    fun isBalanceHolderClosed(balanceHolderId: String) = balanceHolderId in clBalansHolder
 
-    val clBalansHolder: Array<String> = arrayOf(
+    val clBalansHolder: Set<String> = setOf(
         "03328913", // КОМУНАЛЬНЕ ПІДПРИЄМСТВО "КИЇВСЬКИЙ МЕТРОПОЛІТЕН"
         "31725604", // КОМУНАЛЬНЕ ПІДПРИЄМСТВО "КИЇВПАСТРАНС"
         "26112340", // ДЕПАРТАМЕНТ ЕКСПЛУАТАЦІЇ ВОДОПРОВІДНОГО ГОСПОДАРСТВА ПрАТ "АК "КИЇВВОДОКАНАЛ"

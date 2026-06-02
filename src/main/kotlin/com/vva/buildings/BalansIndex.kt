@@ -13,7 +13,7 @@ enum class BalansIndex(val index: Int) {
     area(9),                  // Загальна Площа будинку (кв.м.)
     addressPostCode(10),      // Поштовий індекс
     addressPostDistrict(11),  // Район
-    addressPostStreet(12),    // Назва Вулиці
+    addressThoroughfare(12),  // Назва Вулиці
     registrationId(13),       // Реєстрація у Державному реєстрі (Реєстраційний номер об'єкту нерухомого майна)
     condition(14),            // Стан об'єкту
     validityDate(15),         // Дата Актуальності

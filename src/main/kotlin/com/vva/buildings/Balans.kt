@@ -6,7 +6,6 @@ import com.vva.buildings.Utils.getDt8601
 import com.vva.buildings.Utils.getQuotationString
 import com.vva.buildings.Utils.getStatus
 import com.vva.buildings.Utils.is634
-import com.vva.buildings.Utils.isBalanceHolderClosed
 import com.vva.buildings.Utils.isNotKyiv
 import com.vva.buildings.Utils.setQuotation
 import org.apache.poi.ss.usermodel.CellType
@@ -23,11 +22,11 @@ object Balans {
 
             val cellBalanceHolderId = row.getCell(BalansIndex.balanceHolderId.index)
             val balanceHolderId = cellBalanceHolderId.toString().trim()
-            if (balanceHolderId.equals("22991617")) continue
+            if (balanceHolderId == "22991617") continue
 
             val cellFieldOfActivity = row.getCell(BalansIndex.fieldOfActivity.index)
             val fieldOfActivity = cellFieldOfActivity.toString().trim()
-            if (fieldOfActivity.equals("Невизначені")) continue
+            if (fieldOfActivity == "Невизначені") continue
 
             val cellIndex = row.getCell(BalansIndex.id.index)
             if (cellIndex.cellType != CellType.NUMERIC) continue
@@ -103,7 +102,7 @@ object Balans {
             buildingData.add(
                 setQuotation(
                     row.getCell(
-                        BalansIndex.addressPostCode.ordinal
+                        BalansIndex.addressPostCode.index
                     )
                 )
             )        // addressPostCode - Поштовий індекс
@@ -132,19 +131,11 @@ object Balans {
             buildingData.add(
                 setQuotation(
                     row.getCell(
-                        BalansIndex.addressPostStreet.index
+                        BalansIndex.addressThoroughfare.index
                     )
                 )
-            )        // addressPostStreet - Назва Вулиці
+            )        // addressThoroughfare - Назва Вулиці
             buildingData.add("XXX")                                // addressLocatorDesignator - Номер Будинку
-//            buildingData.add(
-//                getAddressBuilding(
-//                    balanceHolderId,
-//                    row.getCell(
-//                        BalansIndex.addressLocatorDesignator.index
-//                    ).toString().trim()
-//                )
-//            )                                // addressLocatorDesignator - Номер Будинку
             buildingData.add("null")                               // addressLocatorBuilding
             buildingData.add("null")                               // addressLocatorName
             buildingData.add(
@@ -185,33 +176,18 @@ object Balans {
                     .toString()
             )               // destinationGroup - Група призначення
 
-            tabBuildings.put(buildingId, buildingData)
+            tabBuildings[buildingId] = buildingData
         }
         return tabBuildings
     }
 
     fun getBalansCsv(tabBuildings: Map<String, List<String>>): String {
         println("tabBuildings.size = ${tabBuildings.size}")
-        val list = tabBuildings.values.toList().filter {
-            !is634(it[BuildingIndex.destinationGroup.index])
-        }
-        println("list.size = ${list.size}")
-        val listNot634 = mutableListOf<List<String>>()
-        for (item in list) {
-            listNot634.add(item.slice(0..BuildingIndex.validityDate.index))
-        }
+        val listNot634 = tabBuildings.values
+            .filterNot { is634(it[BuildingIndex.destinationGroup.index]) }
+            .map { it.slice(0..BuildingIndex.validityDate.index) }
+        println("listNot634.size = ${listNot634.size}")
         return getCsvString(header, listNot634)
-    }
-
-    fun getAddressBuilding(
-        balanceHolderId: String,
-        addressLocatorDesignator: String
-    ): String {
-        return if (isBalanceHolderClosed(balanceHolderId)) {
-            "xxx"
-        } else {
-            getQuotationString(addressLocatorDesignator)
-        }
     }
 
     val header: Array<String> = arrayOf(
@@ -239,7 +215,7 @@ object Balans {
         "addressAdminUnitL4",
         "addressPostName",
         "addressPostDistrict",
-        "addressPostStreet",
+        "addressThoroughfare",
         "addressLocatorDesignator",
         "addressLocatorBuilding",
         "addressLocatorName",

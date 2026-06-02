@@ -21,19 +21,18 @@ object FreeSpace {
     fun createFreeSpaceTabs(tabBuildings: Map<String, List<String>>, sheet: XSSFSheet) {
         tabProzorro.clear()
         tabBuildings2.clear()
-        var count634 = 0
         val rowIterator = sheet.iterator()
         while (rowIterator.hasNext()) {
             val row = rowIterator.next()
             if (row.rowNum < 3) continue // Skip header row
 
-            val cellIdSpace = row.getCell(FreeSpaceIndex.idSpace.ordinal) // Реєстра-ційний №
+            val cellIdSpace = row.getCell(FreeSpaceIndex.idSpace.index) // Реєстра-ційний №
             if (cellIdSpace.cellType != CellType.NUMERIC) continue // Skip empty rows
             val idSpace = formatToId(cellIdSpace) // ID вільного простору
 
             val idBuilding = formatToId(
                 row.getCell(
-                    FreeSpaceIndex.buildingId.ordinal
+                    FreeSpaceIndex.buildingId.index
                 )
             ) // ID об'єкту
             val building = tabBuildings[idBuilding]
@@ -41,14 +40,9 @@ object FreeSpace {
                 logger.info("Building with ID $idBuilding not found in tabBuildings")
                 continue
             }
-//            if (is634(building[BuildingIndex.destinationGroup.ordinal].toString())) {
-//                count634++
-//                logger.info("Skipping building with ID $idBuilding for freeSpace ID $idSpace due to 634 code")
-//                continue // Skip buildings with 634 code
-//            }
 
             val cellEtcCode = row.getCell(
-                FreeSpaceIndex.etcCode.ordinal
+                FreeSpaceIndex.etcCode.index
             ) // Унікальний код обєкту у ЕТС Прозорро-продажі
 
             if (cellEtcCode.cellType == CellType.STRING) {
@@ -65,44 +59,44 @@ object FreeSpace {
             } else {
                 val data = mutableListOf<String>()
                 data.add("$idSpace-$idBuilding") // buildingId
-                data.add(building[BuildingIndex.isPartOf.ordinal]) // isPartOf
-                data.add(building[BuildingIndex.title.ordinal]) // buildingTitle
-                data.add(building[BuildingIndex.kind.ordinal]) // kind
-                data.add(building[BuildingIndex.type.ordinal]) // type
-                data.add(building[BuildingIndex.description.ordinal]) // description
-                data.add(building[BuildingIndex.ownerName.ordinal]) // ownercustodianName
-                data.add(building[BuildingIndex.ownerId.ordinal]) // ownercustodianId
-                data.add(building[BuildingIndex.balanceHolderName.ordinal]) // balanceHolderName
-                data.add(building[BuildingIndex.balanceHolderId.ordinal]) // balanceHolderId
-                data.add(building[BuildingIndex.userName.ordinal]) // userName
-                data.add(building[BuildingIndex.userId.ordinal]) // userId
-                data.add(building[BuildingIndex.dk018classId.ordinal]) // dk018classId
-                data.add(building[BuildingIndex.dk018classDescription.ordinal]) // dk018classDescription
-                data.add(building[BuildingIndex.unitName.ordinal]) // unitName
+                data.add(building[BuildingIndex.isPartOf.index]) // isPartOf
+                data.add(building[BuildingIndex.title.index]) // buildingTitle
+                data.add(building[BuildingIndex.kind.index]) // kind
+                data.add(building[BuildingIndex.type.index]) // type
+                data.add(building[BuildingIndex.description.index]) // description
+                data.add(building[BuildingIndex.ownerName.index]) // ownercustodianName
+                data.add(building[BuildingIndex.ownerId.index]) // ownercustodianId
+                data.add(building[BuildingIndex.balanceHolderName.index]) // balanceHolderName
+                data.add(building[BuildingIndex.balanceHolderId.index]) // balanceHolderId
+                data.add(building[BuildingIndex.userName.index]) // userName
+                data.add(building[BuildingIndex.userId.index]) // userId
+                data.add(building[BuildingIndex.dk018classId.index]) // dk018classId
+                data.add(building[BuildingIndex.dk018classDescription.index]) // dk018classDescription
+                data.add(building[BuildingIndex.unitName.index]) // unitName
                 data.add(
                     setQuotation(row.getCell(FreeSpaceIndex.area.index))
                 ) // buildingArea
-                data.add(building[BuildingIndex.CATUTTC.ordinal]) // CATUTTC
-                data.add(building[BuildingIndex.addressPostCode.ordinal]) // addressPostCode
-                data.add(building[BuildingIndex.addressAdminUnitL1.ordinal]) // addressAdminUnitL1
-                data.add(building[BuildingIndex.addressAdminUnitL2.ordinal]) // addressAdminUnitL2
-                data.add(building[BuildingIndex.addressAdminUnitL3.ordinal]) // addressAdminUnitL3
-                data.add(building[BuildingIndex.addressAdminUnitL4.ordinal]) // addressAdminUnitL4
-                data.add(building[BuildingIndex.addressPostName.ordinal]) // addressPostName
-                data.add(building[BuildingIndex.addressPostDistrict.ordinal]) // addressPostDistrict
-                data.add(building[BuildingIndex.addressPostStreet.ordinal]) // addressPostStreet
+                data.add(building[BuildingIndex.CATUTTC.index]) // CATUTTC
+                data.add(building[BuildingIndex.addressPostCode.index]) // addressPostCode
+                data.add(building[BuildingIndex.addressAdminUnitL1.index]) // addressAdminUnitL1
+                data.add(building[BuildingIndex.addressAdminUnitL2.index]) // addressAdminUnitL2
+                data.add(building[BuildingIndex.addressAdminUnitL3.index]) // addressAdminUnitL3
+                data.add(building[BuildingIndex.addressAdminUnitL4.index]) // addressAdminUnitL4
+                data.add(building[BuildingIndex.addressPostName.index]) // addressPostName
+                data.add(building[BuildingIndex.addressPostDistrict.index]) // addressPostDistrict
+                data.add(building[BuildingIndex.addressPostStreet.index]) // addressPostStreet
                 data.add(
                     setQuotation(row.getCell(FreeSpaceIndex.addressLocatorDesignator.index))
                 ) // addressLocatorDesignator
-                data.add(building[BuildingIndex.addressLocatorBuilding.ordinal]) // addressLocatorBuilding
-                data.add(building[BuildingIndex.addressLocatorName.ordinal]) // addressLocatorName
-                data.add(building[BuildingIndex.registrationStatus.ordinal]) // registrationStatus
-                data.add(building[BuildingIndex.registrationId.ordinal]) // registrationId
-                data.add(building[BuildingIndex.registrationDate.ordinal]) // registrationDate
-                data.add(building[BuildingIndex.constructionReadiness.ordinal]) // constructionReadiness
-                data.add(building[BuildingIndex.condition.ordinal]) // condition
-                data.add(building[BuildingIndex.utilitiesAvailable.ordinal]) // utilitiesAvailable
-                data.add(building[BuildingIndex.validityDate.ordinal]) // validityDate
+                data.add(building[BuildingIndex.addressLocatorBuilding.index]) // addressLocatorBuilding
+                data.add(building[BuildingIndex.addressLocatorName.index]) // addressLocatorName
+                data.add(building[BuildingIndex.registrationStatus.index]) // registrationStatus
+                data.add(building[BuildingIndex.registrationId.index]) // registrationId
+                data.add(building[BuildingIndex.registrationDate.index]) // registrationDate
+                data.add(building[BuildingIndex.constructionReadiness.index]) // constructionReadiness
+                data.add(building[BuildingIndex.condition.index]) // condition
+                data.add(building[BuildingIndex.utilitiesAvailable.index]) // utilitiesAvailable
+                data.add(building[BuildingIndex.validityDate.index]) // validityDate
                 data.add(
                     getValueBool(
                         row,
@@ -142,10 +136,7 @@ object FreeSpace {
 
     private fun getValueBool(row: Row, index: Int): String {
         val s = row.getCell(index).toString().trim().lowercase()
-        if (s.isNullOrBlank() || s == "ні") {
-            return "false"
-        }
-        return "true"
+        return if (s.isBlank() || s == "ні") "false" else "true"
     }
 
     fun getProzorroCsv(): String =

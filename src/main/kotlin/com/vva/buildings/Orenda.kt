@@ -28,6 +28,9 @@ object Orenda {
         logger.info("Start creating Orenda tabs")
         tabListProzzoro.clear()
         tabList.clear()
+        var o634Count = 0
+        var countValidityDateEmpty = 0
+        var countValidityDateBefore2020 = 0
 
         val rowIterator = sheet.iterator()
         while (rowIterator.hasNext()) {
@@ -39,20 +42,36 @@ object Orenda {
             if (cellIdOrenda.cellType != CellType.NUMERIC) continue
             val idOrenda = formatToId(cellIdOrenda) // ID договору оренди
 
+            val validityDate = getDt8601(row.getCell(OrendaIndex.validityDate.index))
+            if (validityDate == "null") {
+                val msg =
+                    "Пропускаємо рядок ${row.rowNum}, idOrenda: $idOrenda - відсутня дата актуальності"
+                logger.warn(msg)
+                countValidityDateEmpty++
+                continue
+            }
+            if (validityDate < "2020-01-01") {
+                // Пропускаємо договори з датою актуальності раніше 2020-01-01
+                val msg =
+                    "Пропускаємо рядок ${row.rowNum}, idOrenda: $idOrenda - дата актуальності $validityDate раніше 2020-01-01"
+                logger.warn(msg)
+                countValidityDateBefore2020++
+                continue
+            }
+
             val cellContractStatus = row.getCell(OrendaIndex.contractStatus.index)
             val contractStatus = cellContractStatus.toString().trim()
-            if (!contractStatus.equals("Договір діє")) continue
+            if (contractStatus != "Договір діє") continue
 
             val idBuildingCell = row.getCell(OrendaIndex.idBuilding.index) // cell ID об'єкту
             val idBuildingArray = idBuildingCell.toString()
-            if (idBuildingArray.isNullOrBlank()) {
+            if (idBuildingArray.isBlank()) {
                 val msg = "ID об'єкту порожній у рядку ${row.rowNum}, idOrenda: $idOrenda"
                 logger.warn(msg)
                 continue
             }
 
             val idBuildings = idBuildingArray.split(";").map { it.trim() }
-//            logger.warn("idBuildings: $idBuildings, idOrenda: $idOrenda")
             val idBuilding = idBuildings[0] // Беремо перший ID об'єкту
 
             val building = tabBuildings[idBuilding]
@@ -63,7 +82,7 @@ object Orenda {
                 continue
             }
             if (is634m(tabBuildings, idBuildings)) {
-//                logger.warn("Skipping building with ID $idBuildings as it is 634 code")
+                o634Count++
                 continue
             }
 
@@ -71,7 +90,7 @@ object Orenda {
                 row.getCell(OrendaIndex.etcCode.index) // Унікальний код обєкту у ЕТС Прозорро-продажі
 
             if (cellEtcCode.cellType == CellType.STRING) {
-//                logger.warn("Etc code is STRING: $cellEtcCode")
+                logger.warn("Etc code is STRING: $cellEtcCode")
                 val etcCode = getEtcCode(cellEtcCode.toString().trim())
                 val url = getUrl(etcCode)
                 val title = getTitleBuilding(tabBuildings, idBuilding)
@@ -155,8 +174,12 @@ object Orenda {
                 ) // contractUserName - Орендар - Повна Назва
                 data.add(
                     getQuotationString(
-                        getNotPrivate(row.getCell(
-                            OrendaIndex.contractUserId.index).toString()))
+                        getNotPrivate(
+                            row.getCell(
+                                OrendaIndex.contractUserId.index
+                            ).toString()
+                        )
+                    )
                 ) // contractUserId - Орендар - Код ЄДРПОУ
                 data.add(
                     getDt8601(row.getCell(OrendaIndex.contractPeriodStartDate.index))
@@ -171,23 +194,29 @@ object Orenda {
                     getCurrencyValue(row.getCell(OrendaIndex.contractValueAmount.index))
                 ) // contractValueAmount - Сума вартості договору
                 data.add("null") // contractValueDescription - Опис вартості договору (не вказано в даних)
-                data.add(
-                    getDt8601(row.getCell(OrendaIndex.validityDate.index))
-                ) // validityDate - Дата Актуальності
-//                data.add(
-//                    getDt8601(row.getCell(OrendaIndex.contractFactPeriodEndDate.index))
-//                ) // contractFactPeriodEndDate - Фактичне закінченя оренди
+                data.add(validityDate) // validityDate - Дата Актуальності
 
                 tabList.add(data)
             }
+        }
+        if (countValidityDateEmpty > 0) {
+            logger.info("Skipped $countValidityDateEmpty rows with empty validityDate")
+        }
+        if (countValidityDateBefore2020 > 0) {
+            logger.info("Skipped $countValidityDateBefore2020 rows with validityDate before 2020-01-01")
+        }
+        if (o634Count > 0) {
+            logger.info("Skipped $o634Count buildings with 634 code")
         }
         logger.info("Orenda tabList size: ${tabList.size} - tabListProzzoro size: ${tabListProzzoro.size}")
         logger.info("Total size of Orenda tabs: ${tabList.size + tabListProzzoro.size}")
         logger.info("Finished creating Orenda tabs")
     }
 
-    fun getListCsv() =
-        Utils.getCsvString(headerList, tabList)
+    fun getListCsv(): String {
+        logger.info("ListCsv: $tabList")
+        return Utils.getCsvString(headerList, tabList)
+    }
 
     fun getListProzorroSalesCsv() =
         Utils.getCsvString(headerListProzorroSales, tabListProzzoro)
@@ -236,6 +265,5 @@ object Orenda {
         "contractValueAmount",
         "contractValueDescription",
         "validityDate",
-        "contractFactPeriodEndDate",
     )
 }
