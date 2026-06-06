@@ -37,6 +37,7 @@ class BuildingsApplication {
         logger.info("Завантаження ${pathInputBalans}...")
         val workbookBalans = getWorkbook(pathInputBalans)
         val sheetBalans = workbookBalans.getSheetAt(0)
+        InputValidator.validateBalans(sheetBalans)
         val tabBuildings = getTabBalans(sheetBalans)
         logger.info("Всього будівель у таблиці: ${tabBuildings.size}")
 
@@ -46,6 +47,7 @@ class BuildingsApplication {
         logger.info("Завантаження ${pathInputFreeSpace}...")
         val workbookFreeSpace = getWorkbook(pathInputFreeSpace)
         val sheetFreeSpace = workbookFreeSpace.getSheetAt(0)
+        InputValidator.validateFreeSpace(sheetFreeSpace)
         val freeSpaceData = createFreeSpaceTabs(tabBuildings, sheetFreeSpace)
 
         saveCsvFile(getProzorroCsv(freeSpaceData), pathOutputProzorro)
@@ -54,6 +56,7 @@ class BuildingsApplication {
         logger.info("Завантаження ${pathInputOrenda}...")
         val workbookOrenda = getWorkbook(pathInputOrenda)
         val sheetOrenda = workbookOrenda.getSheetAt(0)
+        InputValidator.validateOrenda(sheetOrenda)
         val orendaData = Orenda.createOrendaTabs(tabBuildings, sheetOrenda)
 
         val listCsv = Orenda.getListCsv(orendaData)
