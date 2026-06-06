@@ -45,8 +45,7 @@ object Utils {
 
     fun getCsvString(header: Array<String>, tab: List<List<String>>): String {
         val sb = StringBuilder()
-        sb.append(header.joinToString(",")).append("\n") // Header for the CSV
-        println("Count tab: ${tab.size}")
+        sb.append(header.joinToString(",")).append("\n")
         for (data in tab) {
             sb.append(data.joinToString(",")).append("\n")
         }
@@ -85,10 +84,10 @@ object Utils {
 
     fun isNotKyiv(address: String): Boolean {
         val normalized = address.lowercase().trim()
-        return normalized == "києво-святошинський" || KyivDistrict.none { it in normalized }
+        return normalized == "києво-святошинський" || kyivDistricts.none { it in normalized }
     }
 
-    val KyivDistrict = listOf(
+    val kyivDistricts = listOf(
         "голосіївський",
         "дарницький",
         "деснянський",

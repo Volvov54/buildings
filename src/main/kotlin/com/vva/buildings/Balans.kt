@@ -10,8 +10,10 @@ import com.vva.buildings.Utils.isNotKyiv
 import com.vva.buildings.Utils.setQuotation
 import org.apache.poi.ss.usermodel.CellType
 import org.apache.poi.xssf.usermodel.XSSFSheet
+import org.slf4j.LoggerFactory
 
 object Balans {
+    private val logger = LoggerFactory.getLogger(Balans::class.java)
     fun getTabBalans(sheet: XSSFSheet): Map<String, List<String>> {
         val tabBuildings = mutableMapOf<String, MutableList<String>>()
         val rowIterator = sheet.iterator()
@@ -182,11 +184,11 @@ object Balans {
     }
 
     fun getBalansCsv(tabBuildings: Map<String, List<String>>): String {
-        println("tabBuildings.size = ${tabBuildings.size}")
+        logger.info("tabBuildings.size = ${tabBuildings.size}")
         val listNot634 = tabBuildings.values
             .filterNot { is634(it[BuildingIndex.destinationGroup.index]) }
             .map { it.slice(0..BuildingIndex.validityDate.index) }
-        println("listNot634.size = ${listNot634.size}")
+        logger.info("listNot634.size = ${listNot634.size}")
         return getCsvString(header, listNot634)
     }
 

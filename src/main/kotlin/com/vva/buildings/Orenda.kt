@@ -15,19 +15,21 @@ import org.apache.poi.xssf.usermodel.XSSFSheet
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+data class OrendaData(
+    val list: List<List<String>>,
+    val prozorro: List<List<String>>
+)
+
 object Orenda {
     val logger: Logger = LoggerFactory.getLogger(Orenda::class.java)
-
-    val tabListProzzoro = mutableListOf<List<String>>()
-    val tabList = mutableListOf<List<String>>()
 
     fun createOrendaTabs(
         tabBuildings: Map<String, List<String>>,
         sheet: XSSFSheet
-    ) {
+    ): OrendaData {
         logger.info("Start creating Orenda tabs")
-        tabListProzzoro.clear()
-        tabList.clear()
+        val tabList = mutableListOf<List<String>>()
+        val tabListProzorro = mutableListOf<List<String>>()
         var o634Count = 0
         var countValidityDateEmpty = 0
         var countValidityDateBefore2020 = 0
@@ -44,17 +46,12 @@ object Orenda {
 
             val validityDate = getDt8601(row.getCell(OrendaIndex.validityDate.index))
             if (validityDate == "null") {
-                val msg =
-                    "Пропускаємо рядок ${row.rowNum}, idOrenda: $idOrenda - відсутня дата актуальності"
-                logger.warn(msg)
+                logger.warn("Пропускаємо рядок ${row.rowNum}, idOrenda: $idOrenda - відсутня дата актуальності")
                 countValidityDateEmpty++
                 continue
             }
             if (validityDate < "2020-01-01") {
-                // Пропускаємо договори з датою актуальності раніше 2020-01-01
-                val msg =
-                    "Пропускаємо рядок ${row.rowNum}, idOrenda: $idOrenda - дата актуальності $validityDate раніше 2020-01-01"
-                logger.warn(msg)
+                logger.warn("Пропускаємо рядок ${row.rowNum}, idOrenda: $idOrenda - дата актуальності $validityDate раніше 2020-01-01")
                 countValidityDateBefore2020++
                 continue
             }
@@ -66,8 +63,7 @@ object Orenda {
             val idBuildingCell = row.getCell(OrendaIndex.idBuilding.index) // cell ID об'єкту
             val idBuildingArray = idBuildingCell.toString()
             if (idBuildingArray.isBlank()) {
-                val msg = "ID об'єкту порожній у рядку ${row.rowNum}, idOrenda: $idOrenda"
-                logger.warn(msg)
+                logger.warn("ID об'єкту порожній у рядку ${row.rowNum}, idOrenda: $idOrenda")
                 continue
             }
 
@@ -76,9 +72,7 @@ object Orenda {
 
             val building = tabBuildings[idBuilding]
             if (building == null) {
-                val msg =
-                    "Building with ID ${idBuildings[0]} not found in tabBuildings, idOrenda: $idOrenda"
-                logger.warn(msg)
+                logger.warn("Building with ID ${idBuildings[0]} not found in tabBuildings, idOrenda: $idOrenda")
                 continue
             }
             if (is634m(tabBuildings, idBuildings)) {
@@ -95,12 +89,7 @@ object Orenda {
                 val url = getUrl(etcCode)
                 val title = getTitleBuilding(tabBuildings, idBuilding)
 
-                val data = mutableListOf<String>()
-                data.add(etcCode) // ocid - Унікальний код обєкту у ЕТС Прозорро-продажі
-                data.add(title)   // title - Назва об'єкту
-                data.add(url)     // url - Унікальний код обєкту у ЕТС Прозорро-продажі
-
-                tabListProzzoro.add(data)
+                tabListProzorro.add(listOf(etcCode, title, url))
             } else {
                 val data = mutableListOf<String>()
                 data.add("$idOrenda-$idBuilding") // id - ID договору оренди
@@ -208,18 +197,17 @@ object Orenda {
         if (o634Count > 0) {
             logger.info("Skipped $o634Count buildings with 634 code")
         }
-        logger.info("Orenda tabList size: ${tabList.size} - tabListProzzoro size: ${tabListProzzoro.size}")
-        logger.info("Total size of Orenda tabs: ${tabList.size + tabListProzzoro.size}")
+        logger.info("Orenda tabList size: ${tabList.size} - tabListProzorro size: ${tabListProzorro.size}")
+        logger.info("Total size of Orenda tabs: ${tabList.size + tabListProzorro.size}")
         logger.info("Finished creating Orenda tabs")
+        return OrendaData(tabList, tabListProzorro)
     }
 
-    fun getListCsv(): String {
-        logger.info("ListCsv: $tabList")
-        return Utils.getCsvString(headerList, tabList)
-    }
+    fun getListCsv(data: OrendaData): String =
+        Utils.getCsvString(headerList, data.list)
 
-    fun getListProzorroSalesCsv() =
-        Utils.getCsvString(headerListProzorroSales, tabListProzzoro)
+    fun getListProzorroSalesCsv(data: OrendaData): String =
+        Utils.getCsvString(headerListProzorroSales, data.prozorro)
 
     val headerListProzorroSales = arrayOf(
         "ocid",

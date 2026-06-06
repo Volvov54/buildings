@@ -12,15 +12,17 @@ import org.apache.poi.xssf.usermodel.XSSFSheet
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+data class FreeSpaceData(
+    val prozorro: List<List<String>>,
+    val buildings: List<List<String>>
+)
+
 object FreeSpace {
     val logger: Logger = LoggerFactory.getLogger(FreeSpace::class.java)
 
-    val tabProzorro = mutableListOf<List<String>>()
-    val tabBuildings2 = mutableListOf<List<String>>()
-
-    fun createFreeSpaceTabs(tabBuildings: Map<String, List<String>>, sheet: XSSFSheet) {
-        tabProzorro.clear()
-        tabBuildings2.clear()
+    fun createFreeSpaceTabs(tabBuildings: Map<String, List<String>>, sheet: XSSFSheet): FreeSpaceData {
+        val tabProzorro = mutableListOf<List<String>>()
+        val tabBuildings2 = mutableListOf<List<String>>()
         val rowIterator = sheet.iterator()
         while (rowIterator.hasNext()) {
             val row = rowIterator.next()
@@ -50,12 +52,7 @@ object FreeSpace {
                 val url = getUrl(etcCode)
                 val title = getTitleBuilding(tabBuildings, idBuilding)
 
-                val data = mutableListOf<String>()
-                data.add(idSpace) // ocid - Унікальний код обєкту у ЕТС Прозорро-продажі
-                data.add(title)   // title - Назва об'єкту
-                data.add(url)     // url - Унікальний код обєкту у ЕТС Прозорро-продажі
-
-                tabProzorro.add(data)
+                tabProzorro.add(listOf(idSpace, title, url))
             } else {
                 val data = mutableListOf<String>()
                 data.add("$idSpace-$idBuilding") // buildingId
@@ -126,7 +123,8 @@ object FreeSpace {
             }
         }
         logger.info("Free spaces prozorro: ${tabProzorro.size} - buildings2: ${tabBuildings2.size}")
-        logger.info("Total free spaces buildings: ${tabBuildings2.size+tabProzorro.size}")
+        logger.info("Total free spaces buildings: ${tabBuildings2.size + tabProzorro.size}")
+        return FreeSpaceData(tabProzorro, tabBuildings2)
     }
 
     private fun getValueStr(row: Row, index: Int): String {
@@ -139,11 +137,11 @@ object FreeSpace {
         return if (s.isBlank() || s == "ні") "false" else "true"
     }
 
-    fun getProzorroCsv(): String =
-        Utils.getCsvString(headerProzorro, tabProzorro)
+    fun getProzorroCsv(data: FreeSpaceData): String =
+        Utils.getCsvString(headerProzorro, data.prozorro)
 
-    fun getBuldins2Csv(): String =
-        Utils.getCsvString(headerBuildings2, tabBuildings2)
+    fun getBuildingsCsv(data: FreeSpaceData): String =
+        Utils.getCsvString(headerBuildings2, data.buildings)
 
 
     val headerProzorro: Array<String> = arrayOf(
