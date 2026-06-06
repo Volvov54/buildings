@@ -13,7 +13,7 @@
 
     <appender name="SWING" class="com.vva.buildings.ui.TextAreaAppender"/>
 
-    <logger name="com.vva.buildings" level="INFO">
+    <logger name="com.vva.buildings" level="INFO" additivity="false">
         <appender-ref ref="FILE"/>
         <appender-ref ref="SWING"/>
     </logger>
