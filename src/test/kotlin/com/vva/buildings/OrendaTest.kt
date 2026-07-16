@@ -168,6 +168,17 @@ class OrendaTest {
     }
 
     @Test
+    fun `createOrendaTabs - друга будівля з переліку відсутня в tabBuildings не заважає обробці`() {
+        // is634m перевіряє групу призначення для кожного ID зі списку; відсутній у tabBuildings ID
+        // просто не враховується (не приймається за 634), а не спричиняє помилку.
+        val sheet = sheetWithRows(2 to orendaRow(OrendaIndex.idBuilding to "100;999"))
+        val result = Orenda.createOrendaTabs(tabBuildings, sheet)
+
+        assertEquals(1, result.list.size)
+        assertEquals("1-100", result.list.single()[Orenda.headerList.indexOf("id")])
+    }
+
+    @Test
     fun `createOrendaTabs - обрізає пробіли навколо ID обєктів у переліку`() {
         val sheet = sheetWithRows(2 to orendaRow(OrendaIndex.idBuilding to "  100 ; 200 "))
         val result = Orenda.createOrendaTabs(tabBuildings, sheet)

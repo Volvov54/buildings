@@ -148,6 +148,12 @@ class UtilsTest {
         assertEquals("22991617", Utils.formatToId(numericCell(22991617.0)))
     }
 
+    @Test
+    fun `formatToId - нецілий id округлюється до найближчого цілого`() {
+        // Документує поточну поведінку: DecimalFormat("#") округлює, а не відкидає дробову частину.
+        assertEquals("124", Utils.formatToId(numericCell(123.7)))
+    }
+
     // --- getCsvString ---
 
     @Test

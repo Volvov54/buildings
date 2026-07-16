@@ -97,6 +97,15 @@ class InputValidatorTest {
     }
 
     @Test
+    fun `validateBalans - усі одночасні невідповідності потрапляють в один виняток`() {
+        val sheet = sheetWithHeaderRow(balansHeaders + mapOf(1 to "Помилка 1", 5 to "Помилка 2"))
+        val ex = assertThrows(IllegalStateException::class.java) { InputValidator.validateBalans(sheet) }
+
+        assertTrue(ex.message!!.contains("колонка[1]"))
+        assertTrue(ex.message!!.contains("колонка[5]"))
+    }
+
+    @Test
     fun `validateBalans - відсутній другий рядок кидає виняток`() {
         val sheet = workbook.createSheet()
         sheet.createRow(0)

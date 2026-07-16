@@ -177,4 +177,50 @@ class BuildingsApplicationProcessTest {
 
         assertThrows(IllegalStateException::class.java) { app.process() }
     }
+
+    @Test
+    fun `process - кидає виняток якщо каталог виводу не існує`(@TempDir tempDir: Path) {
+        // CLAUDE.md документує вимогу: каталог data/output має існувати заздалегідь.
+        val balansFile = tempDir.resolve("Баланс.xlsx")
+        writeSheet(
+            balansFile,
+            headerRow = mapOf(
+                0 to "ID об'єкту",
+                1 to "Назва Об'єкту",
+                2 to "Вид Об'єкту відповідно Класифікатора майна",
+                3 to "Тип Об'єкту",
+                4 to "Призначення",
+                5 to "Балансоутримувач - Повна Назва",
+                6 to "Балансоутримувач - Код ЄДРПОУ",
+                7 to "Вид Об'єкту відповідно Класифікатора майна (код)",
+                8 to "Вид Об'єкту відповідно Класифікатора майна (назва)",
+                9 to "Загальна Площа будинку (кв.м.)",
+                10 to "Поштовий індекс",
+                11 to "Район",
+                12 to "Назва Вулиці",
+                13 to "Реєстрація у Державному реєстрі (Реєстраційний номер об'єкту нерухомого майна)",
+                14 to "Стан Об'єкту",
+                15 to "Дата Актуальності",
+                16 to "Група Призначення",
+                17 to "Номер Будинку",
+                18 to "Сфера діяльності",
+            ),
+            dataRows = emptyMap()
+        )
+
+        val missingOutputDir = tempDir.resolve("немає-такого-каталогу")
+
+        val app = BuildingsApplication(
+            pathInputBalans = balansFile.toString(),
+            pathInputFreeSpace = "не використовується",
+            pathInputOrenda = "не використовується",
+            pathOutputBuildings = missingOutputDir.resolve("buildings.csv").toString(),
+            pathOutputBuildings2 = missingOutputDir.resolve("buildingsRentable.csv").toString(),
+            pathOutputProzorro = missingOutputDir.resolve("listProzorroSales_buildingsRentable.csv").toString(),
+            pathOutputList = missingOutputDir.resolve("list.csv").toString(),
+            pathOutputListProzorroSales = missingOutputDir.resolve("listProzorroSales_rented.csv").toString(),
+        )
+
+        assertThrows(java.nio.file.NoSuchFileException::class.java) { app.process() }
+    }
 }
