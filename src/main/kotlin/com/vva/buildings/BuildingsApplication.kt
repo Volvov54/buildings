@@ -8,30 +8,25 @@ import com.vva.buildings.FreeSpace.getProzorroCsv
 import com.vva.buildings.ServiceXlsx.getWorkbook
 import com.vva.buildings.ui.MainFrame
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
-import java.nio.file.FileSystems
 import java.nio.file.Files
 import java.nio.file.Path
 import javax.swing.SwingUtilities
 
 @SpringBootApplication
-class BuildingsApplication {
+class BuildingsApplication(
+    @param:Value("\${buildings.input.balans}") private val pathInputBalans: String,
+    @param:Value("\${buildings.input.free-space}") private val pathInputFreeSpace: String,
+    @param:Value("\${buildings.input.orenda}") private val pathInputOrenda: String,
+    @param:Value("\${buildings.output.buildings}") private val pathOutputBuildings: String,
+    @param:Value("\${buildings.output.buildings-rentable}") private val pathOutputBuildings2: String,
+    @param:Value("\${buildings.output.prozorro-buildings-rentable}") private val pathOutputProzorro: String,
+    @param:Value("\${buildings.output.list}") private val pathOutputList: String,
+    @param:Value("\${buildings.output.prozorro-list}") private val pathOutputListProzorroSales: String,
+) {
     private val logger = LoggerFactory.getLogger(BuildingsApplication::class.java)
-
-    val pathInputBalans = "data/input/Баланс.xlsx"
-    val pathInputFreeSpace = "data/input/ВільніПлощі.xlsx"
-    val pathInputOrenda = "data/input/Оренда.xlsx"
-    val pathOutputBuildings =
-        FileSystems.getDefault().getPath("data/output/buildings.csv")
-    val pathOutputBuildings2 =
-        FileSystems.getDefault().getPath("data/output/buildingsRentable.csv")
-    val pathOutputProzorro =
-        FileSystems.getDefault().getPath("data/output/listProzorroSales_buildingsRentable.csv")
-    val pathOutputList =
-        FileSystems.getDefault().getPath("data/output/list.csv")
-    val pathOutputListProzorroSales =
-        FileSystems.getDefault().getPath("data/output/listProzorroSales_rented.csv")
 
     fun process() {
         logger.info("Завантаження ${pathInputBalans}...")
@@ -68,11 +63,12 @@ class BuildingsApplication {
         logger.info("CSV-файли успішно згенеровано!")
     }
 
-    private fun saveCsvFile(csv: String, path: Path) {
-        Files.newBufferedWriter(path).use { out ->
+    private fun saveCsvFile(csv: String, path: String) {
+        val target = Path.of(path)
+        Files.newBufferedWriter(target).use { out ->
             out.write(csv)
         }
-        logger.info("Збережено: ${path.fileName}")
+        logger.info("Збережено: ${target.fileName}")
     }
 }
 
