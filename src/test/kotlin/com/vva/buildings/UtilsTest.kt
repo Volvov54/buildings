@@ -1,7 +1,6 @@
 package com.vva.buildings
 
 import org.apache.poi.ss.usermodel.Cell
-import org.apache.poi.ss.usermodel.CellType
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -38,6 +37,12 @@ class UtilsTest {
         calendar.set(year, month - 1, day, 0, 0, 0)
         calendar.set(Calendar.MILLISECOND, 0)
         setCellValue(calendar)
+    }
+
+    private fun buildingRow(vararg overrides: Pair<BuildingIndex, String>): List<String> {
+        val row = MutableList(BuildingIndex.entries.size) { "" }
+        overrides.forEach { (field, value) -> row[field.index] = value }
+        return row
     }
 
     // --- setQuotation / getQuotationString ---
@@ -189,9 +194,7 @@ class UtilsTest {
 
     @Test
     fun `getTitleBuilding - повертає назву за наявним ідентифікатором`() {
-        val row = List(BuildingIndex.entries.size) { "" }.toMutableList()
-        row[BuildingIndex.title.index] = "Будівля 1"
-        val tab = mapOf("1" to row)
+        val tab = mapOf("1" to buildingRow(BuildingIndex.title to "Будівля 1"))
         assertEquals("Будівля 1", Utils.getTitleBuilding(tab, "1"))
     }
 
@@ -215,19 +218,16 @@ class UtilsTest {
 
     @Test
     fun `is634m - true якщо хоча б одна будівля має групу 634`() {
-        val row634 = List(BuildingIndex.entries.size) { "" }.toMutableList()
-        row634[BuildingIndex.destinationGroup.index] = "634"
-        val rowOther = List(BuildingIndex.entries.size) { "" }.toMutableList()
-        rowOther[BuildingIndex.destinationGroup.index] = "100"
-        val tab = mapOf("1" to rowOther, "2" to row634)
+        val tab = mapOf(
+            "1" to buildingRow(BuildingIndex.destinationGroup to "100"),
+            "2" to buildingRow(BuildingIndex.destinationGroup to "634"),
+        )
         assertTrue(Utils.is634m(tab, listOf("1", "2")))
     }
 
     @Test
     fun `is634m - false якщо жодна будівля не має групи 634`() {
-        val row = List(BuildingIndex.entries.size) { "" }.toMutableList()
-        row[BuildingIndex.destinationGroup.index] = "100"
-        val tab = mapOf("1" to row)
+        val tab = mapOf("1" to buildingRow(BuildingIndex.destinationGroup to "100"))
         assertFalse(Utils.is634m(tab, listOf("1")))
     }
 
