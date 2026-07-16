@@ -6,7 +6,7 @@ import java.io.FileInputStream
 object ServiceXlsx {
     fun getWorkbook(pathInput: String): XSSFWorkbook {
         try {
-            return XSSFWorkbook(FileInputStream(pathInput))
+            return FileInputStream(pathInput).use { XSSFWorkbook(it) }
         } catch (e: Exception) {
             throw RuntimeException("Error reading the Excel file at $pathInput: ${e.message}", e)
         }
