@@ -131,6 +131,13 @@ class OrendaTest {
     }
 
     @Test
+    fun `createOrendaTabs - обрізає пробіли навколо статусу договору перед порівнянням`() {
+        val sheet = sheetWithRows(2 to orendaRow(OrendaIndex.contractStatus to "  Договір діє  "))
+        val result = Orenda.createOrendaTabs(tabBuildings, sheet)
+        assertEquals(1, result.list.size)
+    }
+
+    @Test
     fun `createOrendaTabs - пропускає рядок з порожнім ID обєкту`() {
         val sheet = sheetWithRows(2 to orendaRow(OrendaIndex.idBuilding to null))
         val result = Orenda.createOrendaTabs(tabBuildings, sheet)
@@ -158,6 +165,29 @@ class OrendaTest {
 
         assertEquals(1, result.list.size)
         assertEquals("1-100", result.list.single()[Orenda.headerList.indexOf("id")])
+    }
+
+    @Test
+    fun `createOrendaTabs - обрізає пробіли навколо ID обєктів у переліку`() {
+        val sheet = sheetWithRows(2 to orendaRow(OrendaIndex.idBuilding to "  100 ; 200 "))
+        val result = Orenda.createOrendaTabs(tabBuildings, sheet)
+
+        assertEquals(1, result.list.size)
+        assertEquals("1-100", result.list.single()[Orenda.headerList.indexOf("id")])
+    }
+
+    @Test
+    fun `createOrendaTabs - обробляє кілька рядків незалежно одне від одного`() {
+        val sheet = sheetWithRows(
+            2 to orendaRow(OrendaIndex.id to 1.0),
+            3 to orendaRow(OrendaIndex.id to 2.0, OrendaIndex.contractStatus to "Договір розірвано"), // виключений
+            4 to orendaRow(OrendaIndex.id to 3.0),
+        )
+        val result = Orenda.createOrendaTabs(tabBuildings, sheet)
+
+        assertEquals(2, result.list.size)
+        val ids = result.list.map { it[Orenda.headerList.indexOf("id")] }
+        assertEquals(listOf("1-100", "3-100"), ids)
     }
 
     // --- гілка Prozorro (etcCode рядкового типу) ---

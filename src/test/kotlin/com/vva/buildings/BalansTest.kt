@@ -115,6 +115,25 @@ class BalansTest {
     }
 
     @Test
+    fun `getTabBalans - фільтр Невизначені чутливий до регістру`() {
+        // Документує поточну поведінку: порівняння точне (==), тому інший регістр не відфільтровується.
+        val sheet = sheetWithRows(2 to balansRow(BalansIndex.fieldOfActivity to "невизначені"))
+        assertFalse(Balans.getTabBalans(sheet).isEmpty())
+    }
+
+    @Test
+    fun `getTabBalans - обробляє кілька рядків незалежно одне від одного`() {
+        val sheet = sheetWithRows(
+            2 to balansRow(BalansIndex.id to 1.0),
+            3 to balansRow(BalansIndex.id to 2.0, BalansIndex.balanceHolderId to "22991617"), // виключений
+            4 to balansRow(BalansIndex.id to 3.0),
+        )
+        val result = Balans.getTabBalans(sheet)
+
+        assertEquals(setOf("1", "3"), result.keys)
+    }
+
+    @Test
     fun `getTabBalans - пропускає рядок з нечисловим id`() {
         val sheet = sheetWithRows(2 to balansRow(BalansIndex.id to "не число"))
         assertTrue(Balans.getTabBalans(sheet).isEmpty())

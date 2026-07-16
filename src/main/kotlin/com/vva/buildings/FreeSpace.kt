@@ -32,11 +32,12 @@ object FreeSpace {
             if (cellIdSpace.cellType != CellType.NUMERIC) continue // Skip empty rows
             val idSpace = formatToId(cellIdSpace) // ID вільного простору
 
-            val idBuilding = formatToId(
-                row.getCell(
-                    FreeSpaceIndex.buildingId.index
-                )
-            ) // ID об'єкту
+            val cellIdBuilding = row.getCell(FreeSpaceIndex.buildingId.index) // ID об'єкту
+            if (cellIdBuilding.cellType != CellType.NUMERIC) {
+                logger.warn("Рядок ${row.rowNum}: ID об'єкту не є числом, пропускаємо")
+                continue
+            }
+            val idBuilding = formatToId(cellIdBuilding)
             val building = tabBuildings[idBuilding]
             if (building == null) {
                 logger.info("Building with ID $idBuilding not found in tabBuildings")

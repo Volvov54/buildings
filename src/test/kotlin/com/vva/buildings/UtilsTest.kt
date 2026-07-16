@@ -5,6 +5,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.util.Calendar
@@ -113,6 +114,16 @@ class UtilsTest {
         assertEquals("12345678", Utils.getNotPrivate("12345678"))
     }
 
+    @Test
+    fun `getNotPrivate - 9-значний ідентифікатор не маскується`() {
+        assertEquals("123456789", Utils.getNotPrivate("123456789"))
+    }
+
+    @Test
+    fun `getNotPrivate - 11-значний ідентифікатор не маскується`() {
+        assertEquals("12345678901", Utils.getNotPrivate("12345678901"))
+    }
+
     // --- getDt8601 ---
 
     @Test
@@ -168,6 +179,11 @@ class UtilsTest {
         assertEquals("UA-1234-567", Utils.getEtcCode("https://prozorro.sale/auction/UA-1234-567/1"))
     }
 
+    @Test
+    fun `getEtcCode - url з подвійним h на початку теж розпізнається`() {
+        assertEquals("UA-9999-000", Utils.getEtcCode("hhttps://prozorro.sale/auction/UA-9999-000"))
+    }
+
     // --- getUrl ---
 
     @Test
@@ -188,6 +204,14 @@ class UtilsTest {
     @Test
     fun `getUrl - інші коди повертаються без змін`() {
         assertEquals("XX-123", Utils.getUrl("XX-123"))
+    }
+
+    @Test
+    fun `getUrl - код коротший за 2 символи кидає виняток`() {
+        // Документує поточну поведінку: slice(0..1) вимагає щонайменше 2 символів.
+        // Реальні Prozorro-коди завжди мають 2-літерний префікс, тож це малоймовірний,
+        // але не виключений випадок пошкоджених вхідних даних.
+        assertThrows(IndexOutOfBoundsException::class.java) { Utils.getUrl("L") }
     }
 
     // --- getTitleBuilding ---
@@ -231,6 +255,11 @@ class UtilsTest {
         assertFalse(Utils.is634m(tab, listOf("1")))
     }
 
+    @Test
+    fun `is634m - порожній список ідентифікаторів повертає false`() {
+        assertFalse(Utils.is634m(emptyMap(), emptyList()))
+    }
+
     // --- isNotKyiv ---
 
     @Test
@@ -247,6 +276,11 @@ class UtilsTest {
     @Test
     fun `isNotKyiv - інший район повертає true`() {
         assertTrue(Utils.isNotKyiv("Бориспільський"))
+    }
+
+    @Test
+    fun `isNotKyiv - порожній рядок вважається не київським`() {
+        assertTrue(Utils.isNotKyiv(""))
     }
 
     // --- isBalanceHolderClosed ---

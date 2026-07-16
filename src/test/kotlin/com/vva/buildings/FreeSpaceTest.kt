@@ -83,6 +83,15 @@ class FreeSpaceTest {
     }
 
     @Test
+    fun `createFreeSpaceTabs - пропускає рядок з нечисловим buildingId замість падіння`() {
+        val sheet = sheetWithRows(3 to freeSpaceRow(FreeSpaceIndex.buildingId to "не число"))
+        val result = FreeSpace.createFreeSpaceTabs(tabBuildings, sheet)
+
+        assertTrue(result.prozorro.isEmpty())
+        assertTrue(result.buildings.isEmpty())
+    }
+
+    @Test
     fun `createFreeSpaceTabs - пропускає рядок якщо будівля не знайдена`() {
         val sheet = sheetWithRows(3 to freeSpaceRow(FreeSpaceIndex.buildingId to 999.0))
         val result = FreeSpace.createFreeSpaceTabs(tabBuildings, sheet)
@@ -126,6 +135,19 @@ class FreeSpaceTest {
             data[FreeSpace.headerBuildings2.indexOf("utilitiesAvailableElectricNetwork")]
         )
         assertEquals("false", data[FreeSpace.headerBuildings2.indexOf("utilitiesAvailableGasSupply")])
+    }
+
+    @Test
+    fun `createFreeSpaceTabs - обробляє кілька рядків незалежно одне від одного`() {
+        val sheet = sheetWithRows(
+            3 to freeSpaceRow(FreeSpaceIndex.idSpace to 1.0),
+            4 to freeSpaceRow(FreeSpaceIndex.idSpace to 2.0, FreeSpaceIndex.buildingId to 999.0), // будівля не знайдена
+            5 to freeSpaceRow(FreeSpaceIndex.idSpace to 3.0),
+        )
+        val result = FreeSpace.createFreeSpaceTabs(tabBuildings, sheet)
+
+        assertEquals(2, result.buildings.size)
+        assertEquals(listOf("1-100", "3-100"), result.buildings.map { it[0] })
     }
 
     @Test

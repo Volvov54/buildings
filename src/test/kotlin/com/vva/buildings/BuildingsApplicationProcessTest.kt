@@ -2,6 +2,7 @@ package com.vva.buildings
 
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -149,5 +150,31 @@ class BuildingsApplicationProcessTest {
 
         val prozorroListCsv = Files.readString(outputDir.resolve("listProzorroSales_rented.csv"))
         assertEquals(listOf(Orenda.headerListProzorroSales.joinToString(",")), prozorroListCsv.lines().filter { it.isNotBlank() })
+    }
+
+    @Test
+    fun `process - прокидає виняток якщо структура Баланс xlsx не відповідає очікуваній`(@TempDir tempDir: Path) {
+        val balansFile = tempDir.resolve("Баланс.xlsx")
+        writeSheet(
+            balansFile,
+            headerRow = mapOf(0 to "Неправильний заголовок"),
+            dataRows = emptyMap()
+        )
+
+        val outputDir = tempDir.resolve("output")
+        Files.createDirectories(outputDir)
+
+        val app = BuildingsApplication(
+            pathInputBalans = balansFile.toString(),
+            pathInputFreeSpace = "не використовується",
+            pathInputOrenda = "не використовується",
+            pathOutputBuildings = outputDir.resolve("buildings.csv").toString(),
+            pathOutputBuildings2 = outputDir.resolve("buildingsRentable.csv").toString(),
+            pathOutputProzorro = outputDir.resolve("listProzorroSales_buildingsRentable.csv").toString(),
+            pathOutputList = outputDir.resolve("list.csv").toString(),
+            pathOutputListProzorroSales = outputDir.resolve("listProzorroSales_rented.csv").toString(),
+        )
+
+        assertThrows(IllegalStateException::class.java) { app.process() }
     }
 }
