@@ -146,6 +146,19 @@ class BalansTest {
     }
 
     @Test
+    fun `getTabBalans - пропускає рядок з фізично відсутньою клітинкою id`() {
+        // На відміну від balansRow(), тут клітинка id взагалі не створюється (row.getCell поверне null),
+        // а не просто залишається BLANK.
+        val sheet = workbook.createSheet()
+        val row = sheet.createRow(2)
+        row.createCell(BalansIndex.balanceHolderId.index).setCellValue("12345678")
+        row.createCell(BalansIndex.fieldOfActivity.index).setCellValue("Управління")
+        // BalansIndex.id.index (0) навмисно не створюється
+
+        assertTrue(Balans.getTabBalans(sheet).isEmpty())
+    }
+
+    @Test
     fun `getTabBalans - ігнорує перші два рядки як заголовок`() {
         val sheet = sheetWithRows(0 to balansRow(), 1 to balansRow())
         assertTrue(Balans.getTabBalans(sheet).isEmpty())

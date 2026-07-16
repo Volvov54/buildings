@@ -7,6 +7,7 @@ import com.vva.buildings.FreeSpace.getBuildingsCsv
 import com.vva.buildings.FreeSpace.getProzorroCsv
 import com.vva.buildings.ServiceXlsx.getWorkbook
 import com.vva.buildings.ui.MainFrame
+import org.apache.poi.xssf.usermodel.XSSFSheet
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.SpringBootApplication
@@ -29,38 +30,30 @@ class BuildingsApplication(
     private val logger = LoggerFactory.getLogger(BuildingsApplication::class.java)
 
     fun process() {
-        logger.info("Завантаження ${pathInputBalans}...")
-        val workbookBalans = getWorkbook(pathInputBalans)
-        val sheetBalans = workbookBalans.getSheetAt(0)
-        InputValidator.validateBalans(sheetBalans)
+        val sheetBalans = loadValidSheet(pathInputBalans, InputValidator::validateBalans)
         val tabBuildings = getTabBalans(sheetBalans)
         logger.info("Всього будівель у таблиці: ${tabBuildings.size}")
+        saveCsvFile(getBalansCsv(tabBuildings), pathOutputBuildings)
 
-        val balansCsv = getBalansCsv(tabBuildings)
-        saveCsvFile(balansCsv, pathOutputBuildings)
-
-        logger.info("Завантаження ${pathInputFreeSpace}...")
-        val workbookFreeSpace = getWorkbook(pathInputFreeSpace)
-        val sheetFreeSpace = workbookFreeSpace.getSheetAt(0)
-        InputValidator.validateFreeSpace(sheetFreeSpace)
+        val sheetFreeSpace = loadValidSheet(pathInputFreeSpace, InputValidator::validateFreeSpace)
         val freeSpaceData = createFreeSpaceTabs(tabBuildings, sheetFreeSpace)
-
         saveCsvFile(getProzorroCsv(freeSpaceData), pathOutputProzorro)
         saveCsvFile(getBuildingsCsv(freeSpaceData), pathOutputBuildings2)
 
-        logger.info("Завантаження ${pathInputOrenda}...")
-        val workbookOrenda = getWorkbook(pathInputOrenda)
-        val sheetOrenda = workbookOrenda.getSheetAt(0)
-        InputValidator.validateOrenda(sheetOrenda)
+        val sheetOrenda = loadValidSheet(pathInputOrenda, InputValidator::validateOrenda)
         val orendaData = Orenda.createOrendaTabs(tabBuildings, sheetOrenda)
-
-        val listCsv = Orenda.getListCsv(orendaData)
         logger.info("Кількість записів оренди: ${orendaData.list.size}")
-        saveCsvFile(listCsv, pathOutputList)
-
+        saveCsvFile(Orenda.getListCsv(orendaData), pathOutputList)
         saveCsvFile(Orenda.getListProzorroSalesCsv(orendaData), pathOutputListProzorroSales)
 
         logger.info("CSV-файли успішно згенеровано!")
+    }
+
+    private fun loadValidSheet(path: String, validate: (XSSFSheet) -> Unit): XSSFSheet {
+        logger.info("Завантаження $path...")
+        val sheet = getWorkbook(path).getSheetAt(0)
+        validate(sheet)
+        return sheet
     }
 
     private fun saveCsvFile(csv: String, path: String) {

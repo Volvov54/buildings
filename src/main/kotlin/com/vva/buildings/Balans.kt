@@ -1,19 +1,22 @@
 package com.vva.buildings
 
-import com.vva.buildings.Utils.formatToId
 import com.vva.buildings.Utils.getCsvString
 import com.vva.buildings.Utils.getDt8601
 import com.vva.buildings.Utils.getQuotationString
 import com.vva.buildings.Utils.getStatus
 import com.vva.buildings.Utils.is634
 import com.vva.buildings.Utils.isNotKyiv
+import com.vva.buildings.Utils.numericIdOrNull
 import com.vva.buildings.Utils.setQuotation
-import org.apache.poi.ss.usermodel.CellType
+import org.apache.poi.ss.usermodel.Row
 import org.apache.poi.xssf.usermodel.XSSFSheet
 import org.slf4j.LoggerFactory
 
 object Balans {
     private val logger = LoggerFactory.getLogger(Balans::class.java)
+
+    private fun Row.quoted(index: BalansIndex): String = setQuotation(getCell(index.index))
+
     fun getTabBalans(sheet: XSSFSheet): Map<String, List<String>> {
         val tabBuildings = mutableMapOf<String, MutableList<String>>()
         val rowIterator = sheet.iterator()
@@ -22,161 +25,58 @@ object Balans {
             val row = rowIterator.next()
             if (row.rowNum < 2) continue // Skip header row
 
-            val cellBalanceHolderId = row.getCell(BalansIndex.balanceHolderId.index)
-            val balanceHolderId = cellBalanceHolderId.toString().trim()
+            val balanceHolderId = row.getCell(BalansIndex.balanceHolderId.index).toString().trim()
             if (balanceHolderId == "22991617") continue
 
-            val cellFieldOfActivity = row.getCell(BalansIndex.fieldOfActivity.index)
-            val fieldOfActivity = cellFieldOfActivity.toString().trim()
+            val fieldOfActivity = row.getCell(BalansIndex.fieldOfActivity.index).toString().trim()
             if (fieldOfActivity == "Невизначені") continue
 
-            val cellIndex = row.getCell(BalansIndex.id.index)
-            if (cellIndex.cellType != CellType.NUMERIC) continue
-            val buildingId = formatToId(cellIndex)
+            val buildingId = numericIdOrNull(row.getCell(BalansIndex.id.index)) ?: continue
             val isNotKievDistrict = isNotKyiv(
-                row.getCell(BalansIndex.addressPostDistrict.index)
-                    .toString()
-                    .lowercase()
-                    .trim()
+                row.getCell(BalansIndex.addressPostDistrict.index).toString().lowercase().trim()
             )
 
             val buildingData = mutableListOf<String>()
-
-            buildingData.add(buildingId)                           // id - ID об'єкту
-            buildingData.add("null")                               // isPartOf
+            buildingData.add(buildingId)                                                  // id - ID об'єкту
+            buildingData.add("null")                                                       // isPartOf
+            buildingData.add(row.quoted(BalansIndex.title))                                // title - Назва об'єкту
+            buildingData.add(row.quoted(BalansIndex.kind))                                 // kind - Вид Об'єкту відповідно Класифікатора майна
+            buildingData.add(row.quoted(BalansIndex.type))                                 // type - Тип Об'єкту
+            buildingData.add(row.quoted(BalansIndex.description))                          // description - Призначення
+            buildingData.add("Київська міська рада")                                       // ownerName
+            buildingData.add("22883141")                                                   // ownerId
+            buildingData.add(row.quoted(BalansIndex.balanceHolderName))                    // balanceHolderName
+            buildingData.add(getQuotationString(balanceHolderId))                          // balanceHolderId
+            buildingData.add("null")                                                       // userName
+            buildingData.add("null")                                                       // userId
+            buildingData.add(row.quoted(BalansIndex.dk018classId))                         // dk018classId
+            buildingData.add(row.quoted(BalansIndex.dk018classDescription))                // dk018classDescription
+            buildingData.add("кв. м.")                                                     // unitName
+            buildingData.add(row.quoted(BalansIndex.area))                                 // area - Загальна Площа будинку (кв.м.)
+            buildingData.add(if (isNotKievDistrict) "null" else "UA80000000000093317")     // CATUTTC
+            buildingData.add(row.quoted(BalansIndex.addressPostCode))                      // addressPostCode - Поштовий індекс
+            buildingData.add("Україна")                                                    // addressAdminUnitL1
+            buildingData.add(if (isNotKievDistrict) "null" else "м. Київ")                 // addressAdminUnitL2
+            buildingData.add("null")                                                       // addressAdminUnitL3
             buildingData.add(
-                setQuotation(
-                    row.getCell(BalansIndex.title.index)
-                )
-            )        // title - Назва об'єкту
+                if (isNotKievDistrict) row.quoted(BalansIndex.addressPostDistrict) else "null"
+            )                                                                              // addressAdminUnitL4
+            buildingData.add(if (isNotKievDistrict) "null" else "Київ")                    // addressPostName
             buildingData.add(
-                setQuotation(
-                    row.getCell(BalansIndex.kind.index)
-                )
-            )         // kind - Вид Об'єкту відповідно Класифікатора майна
-            buildingData.add(
-                setQuotation(
-                    row.getCell(BalansIndex.type.index)
-                )
-            )         // type - Тип Об'єкту
-            buildingData.add(
-                setQuotation(
-                    row.getCell(BalansIndex.description.index)
-                )
-            )  // description - Призначення
-            buildingData.add("Київська міська рада")               // ownerName
-            buildingData.add("22883141")                           // ownerId
-            buildingData.add(
-                setQuotation(
-                    row.getCell(
-                        BalansIndex.balanceHolderName.index
-                    )
-                )
-            )    // balanceHolderName - Балансоутримувач - Повна Назва
-            buildingData.add(getQuotationString(balanceHolderId))
-            // balanceHolderId - Балансоутримувач - Код ЄДРПОУ
-            buildingData.add("null")                               // userName
-            buildingData.add("null")                               // userId
-            buildingData.add(
-                setQuotation(
-                    row.getCell(
-                        BalansIndex.dk018classId.index
-                    )
-                )
-            )             // dk018classId
-            buildingData.add(
-                setQuotation(
-                    row.getCell(
-                        BalansIndex.dk018classDescription.index
-                    )
-                )
-            )    // dk018classDescription
-            buildingData.add("кв. м.")                             // unitName
-            buildingData.add(
-                setQuotation(
-                    row.getCell(
-                        BalansIndex.area.index
-                    )
-                )
-            )                     // area - Загальна Площа будинку (кв.м.)
-            if (isNotKievDistrict) buildingData.add("null")
-            else buildingData.add("UA80000000000093317")       // CATUTTC
-            buildingData.add(
-                setQuotation(
-                    row.getCell(
-                        BalansIndex.addressPostCode.index
-                    )
-                )
-            )        // addressPostCode - Поштовий індекс
-            buildingData.add("Україна")                            // addressAdminUnitL1
-            if (isNotKievDistrict) buildingData.add("null")
-            else buildingData.add("м. Київ")                   // addressAdminUnitL2
-            buildingData.add("null")                               // addressAdminUnitL3
-            if (isNotKievDistrict) buildingData.add(
-                setQuotation(
-                    row.getCell(
-                        BalansIndex.addressPostDistrict.index
-                    )
-                )
-            )
-            else buildingData.add("null")                      // addressAdminUnitL4
-            if (isNotKievDistrict) buildingData.add("null")
-            else buildingData.add("Київ")                          // addressPostName
-            if (isNotKievDistrict) buildingData.add("null")
-            else buildingData.add(
-                setQuotation(
-                    row.getCell(
-                        BalansIndex.addressPostDistrict.index
-                    )
-                )
-            )      // addressPostDistrict - Район
-            buildingData.add(
-                setQuotation(
-                    row.getCell(
-                        BalansIndex.addressThoroughfare.index
-                    )
-                )
-            )        // addressThoroughfare - Назва Вулиці
-            buildingData.add("XXX")                                // addressLocatorDesignator - Номер Будинку
-            buildingData.add("null")                               // addressLocatorBuilding
-            buildingData.add("null")                               // addressLocatorName
-            buildingData.add(
-                getStatus(
-                    row.getCell(
-                        BalansIndex.registrationId.index
-                    )
-                )
-            )           // registrationStatus - Реєстрація у Державному реєстрі (Реєстраційний номер об'єкту нерухомого майна)
-            buildingData.add(
-                setQuotation(
-                    row.getCell(
-                        BalansIndex.registrationId.index
-                    )
-                )
-            )           // registrationId - Реєстрація у Державному реєстрі (Реєстраційний номер об'єкту нерухомого майна)
-            buildingData.add("null")                               // registrationDate
-            buildingData.add("null")                               // constructionReadiness
-            buildingData.add(
-                setQuotation(
-                    row.getCell(
-                        BalansIndex.condition.index
-                    )
-                )
-            )                // condition - Стан об'єкту
-            buildingData.add("null")                               // utilitiesAvailable
-            buildingData.add(
-                getDt8601(
-                    row.getCell(
-                        BalansIndex.validityDate.index
-                    )
-                )
-            )             // validityDate - Дата Актуальності
-            buildingData.add(
-                row.getCell(
-                    BalansIndex.destinationGroup.index
-                )
-                    .toString()
-            )               // destinationGroup - Група призначення
+                if (isNotKievDistrict) "null" else row.quoted(BalansIndex.addressPostDistrict)
+            )                                                                              // addressPostDistrict - Район
+            buildingData.add(row.quoted(BalansIndex.addressThoroughfare))                  // addressThoroughfare - Назва Вулиці
+            buildingData.add("XXX")                                                        // addressLocatorDesignator - Номер Будинку
+            buildingData.add("null")                                                       // addressLocatorBuilding
+            buildingData.add("null")                                                       // addressLocatorName
+            buildingData.add(getStatus(row.getCell(BalansIndex.registrationId.index)))     // registrationStatus
+            buildingData.add(row.quoted(BalansIndex.registrationId))                       // registrationId
+            buildingData.add("null")                                                       // registrationDate
+            buildingData.add("null")                                                       // constructionReadiness
+            buildingData.add(row.quoted(BalansIndex.condition))                            // condition - Стан об'єкту
+            buildingData.add("null")                                                       // utilitiesAvailable
+            buildingData.add(getDt8601(row.getCell(BalansIndex.validityDate.index)))       // validityDate - Дата Актуальності
+            buildingData.add(row.getCell(BalansIndex.destinationGroup.index).toString())   // destinationGroup - Група призначення
 
             tabBuildings[buildingId] = buildingData
         }

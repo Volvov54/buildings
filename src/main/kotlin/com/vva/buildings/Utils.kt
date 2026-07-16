@@ -43,6 +43,10 @@ object Utils {
 
     fun formatToId(cell: Cell): String = DecimalFormat("#").format(cell.numericCellValue)
 
+    /** Повертає formatToId(cell), якщо клітинка існує і має числовий тип; інакше null. */
+    fun numericIdOrNull(cell: Cell?): String? =
+        if (cell != null && cell.cellType == CellType.NUMERIC) formatToId(cell) else null
+
     fun getCsvString(header: Array<String>, tab: List<List<String>>): String {
         val sb = StringBuilder()
         sb.append(header.joinToString(",")).append("\n")

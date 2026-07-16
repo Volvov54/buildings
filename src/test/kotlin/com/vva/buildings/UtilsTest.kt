@@ -154,6 +154,28 @@ class UtilsTest {
         assertEquals("124", Utils.formatToId(numericCell(123.7)))
     }
 
+    // --- numericIdOrNull ---
+
+    @Test
+    fun `numericIdOrNull - числова клітинка повертає formatToId`() {
+        assertEquals("12345", Utils.numericIdOrNull(numericCell(12345.0)))
+    }
+
+    @Test
+    fun `numericIdOrNull - нечислова клітинка повертає null`() {
+        assertEquals(null, Utils.numericIdOrNull(stringCell("не число")))
+    }
+
+    @Test
+    fun `numericIdOrNull - порожня (BLANK) клітинка повертає null`() {
+        assertEquals(null, Utils.numericIdOrNull(blankCell()))
+    }
+
+    @Test
+    fun `numericIdOrNull - відсутня клітинка (null) повертає null`() {
+        assertEquals(null, Utils.numericIdOrNull(null))
+    }
+
     // --- getCsvString ---
 
     @Test

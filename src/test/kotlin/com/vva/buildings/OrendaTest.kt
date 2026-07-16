@@ -103,6 +103,18 @@ class OrendaTest {
     }
 
     @Test
+    fun `createOrendaTabs - пропускає рядок з фізично відсутньою клітинкою id`() {
+        // На відміну від orendaRow(), тут клітинка id взагалі не створюється.
+        val sheet = workbook.createSheet()
+        val row = sheet.createRow(2)
+        row.createCell(OrendaIndex.idBuilding.index).setCellValue("100")
+        // OrendaIndex.id.index (0) навмисно не створюється
+
+        val result = Orenda.createOrendaTabs(tabBuildings, sheet)
+        assertTrue(result.list.isEmpty())
+    }
+
+    @Test
     fun `createOrendaTabs - пропускає рядок з порожньою датою актуальності`() {
         val sheet = sheetWithRows(2 to orendaRow(OrendaIndex.validityDate to null))
         val result = Orenda.createOrendaTabs(tabBuildings, sheet)

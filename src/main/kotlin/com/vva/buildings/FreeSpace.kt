@@ -1,10 +1,10 @@
 package com.vva.buildings
 
-import com.vva.buildings.Utils.formatToId
 import com.vva.buildings.Utils.getEtcCode
 import com.vva.buildings.Utils.getQuotationString
 import com.vva.buildings.Utils.getTitleBuilding
 import com.vva.buildings.Utils.getUrl
+import com.vva.buildings.Utils.numericIdOrNull
 import com.vva.buildings.Utils.setQuotation
 import org.apache.poi.ss.usermodel.CellType
 import org.apache.poi.ss.usermodel.Row
@@ -28,16 +28,12 @@ object FreeSpace {
             val row = rowIterator.next()
             if (row.rowNum < 3) continue // Skip header row
 
-            val cellIdSpace = row.getCell(FreeSpaceIndex.idSpace.index) // Реєстра-ційний №
-            if (cellIdSpace.cellType != CellType.NUMERIC) continue // Skip empty rows
-            val idSpace = formatToId(cellIdSpace) // ID вільного простору
+            val idSpace = numericIdOrNull(row.getCell(FreeSpaceIndex.idSpace.index)) ?: continue // Реєстра-ційний №
 
-            val cellIdBuilding = row.getCell(FreeSpaceIndex.buildingId.index) // ID об'єкту
-            if (cellIdBuilding.cellType != CellType.NUMERIC) {
+            val idBuilding = numericIdOrNull(row.getCell(FreeSpaceIndex.buildingId.index)) ?: run {
                 logger.warn("Рядок ${row.rowNum}: ID об'єкту не є числом, пропускаємо")
                 continue
             }
-            val idBuilding = formatToId(cellIdBuilding)
             val building = tabBuildings[idBuilding]
             if (building == null) {
                 logger.info("Building with ID $idBuilding not found in tabBuildings")

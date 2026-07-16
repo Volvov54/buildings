@@ -92,6 +92,20 @@ class FreeSpaceTest {
     }
 
     @Test
+    fun `createFreeSpaceTabs - пропускає рядок з фізично відсутньою клітинкою idSpace`() {
+        // На відміну від freeSpaceRow(), тут клітинка idSpace взагалі не створюється.
+        val sheet = workbook.createSheet()
+        val row = sheet.createRow(3)
+        row.createCell(FreeSpaceIndex.buildingId.index).setCellValue(100.0)
+        // FreeSpaceIndex.idSpace.index (0) навмисно не створюється
+
+        val result = FreeSpace.createFreeSpaceTabs(tabBuildings, sheet)
+
+        assertTrue(result.prozorro.isEmpty())
+        assertTrue(result.buildings.isEmpty())
+    }
+
+    @Test
     fun `createFreeSpaceTabs - пропускає рядок якщо будівля не знайдена`() {
         val sheet = sheetWithRows(3 to freeSpaceRow(FreeSpaceIndex.buildingId to 999.0))
         val result = FreeSpace.createFreeSpaceTabs(tabBuildings, sheet)

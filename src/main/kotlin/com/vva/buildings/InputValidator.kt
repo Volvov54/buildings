@@ -6,30 +6,34 @@ import org.slf4j.LoggerFactory
 object InputValidator {
     private val logger = LoggerFactory.getLogger(InputValidator::class.java)
 
-    // Другий рядок (індекс 1) файлу Баланс.xlsx
+    // Другий рядок (індекс 1) файлу Баланс.xlsx. Ключі - BalansIndex.index, щоб перевірка колонок
+    // не розходилась з парсингом у Balans.kt, якщо колонки колись зміщаться.
     private val balansExpected = mapOf(
-        0 to "ID об'єкту",
-        1 to "Назва Об'єкту",
-        2 to "Вид Об'єкту відповідно Класифікатора майна",
-        3 to "Тип Об'єкту",
-        4 to "Призначення",
-        5 to "Балансоутримувач - Повна Назва",
-        6 to "Балансоутримувач - Код ЄДРПОУ",
-        7 to "Вид Об'єкту відповідно Класифікатора майна (код)",
-        8 to "Вид Об'єкту відповідно Класифікатора майна (назва)",
-        9 to "Загальна Площа будинку (кв.м.)",
-        10 to "Поштовий індекс",
-        11 to "Район",
-        12 to "Назва Вулиці",
-        13 to "Реєстрація у Державному реєстрі (Реєстраційний номер об'єкту нерухомого майна)",
-        14 to "Стан Об'єкту",
-        15 to "Дата Актуальності",
-        16 to "Група Призначення",
-        17 to "Номер Будинку",
-        18 to "Сфера діяльності"
+        BalansIndex.id.index to "ID об'єкту",
+        BalansIndex.title.index to "Назва Об'єкту",
+        BalansIndex.kind.index to "Вид Об'єкту відповідно Класифікатора майна",
+        BalansIndex.type.index to "Тип Об'єкту",
+        BalansIndex.description.index to "Призначення",
+        BalansIndex.balanceHolderName.index to "Балансоутримувач - Повна Назва",
+        BalansIndex.balanceHolderId.index to "Балансоутримувач - Код ЄДРПОУ",
+        BalansIndex.dk018classId.index to "Вид Об'єкту відповідно Класифікатора майна (код)",
+        BalansIndex.dk018classDescription.index to "Вид Об'єкту відповідно Класифікатора майна (назва)",
+        BalansIndex.area.index to "Загальна Площа будинку (кв.м.)",
+        BalansIndex.addressPostCode.index to "Поштовий індекс",
+        BalansIndex.addressPostDistrict.index to "Район",
+        BalansIndex.addressThoroughfare.index to "Назва Вулиці",
+        BalansIndex.registrationId.index to "Реєстрація у Державному реєстрі (Реєстраційний номер об'єкту нерухомого майна)",
+        BalansIndex.condition.index to "Стан Об'єкту",
+        BalansIndex.validityDate.index to "Дата Актуальності",
+        BalansIndex.destinationGroup.index to "Група Призначення",
+        BalansIndex.addressLocatorDesignator.index to "Номер Будинку",
+        BalansIndex.fieldOfActivity.index to "Сфера діяльності"
     )
 
-    // Другий рядок (індекс 1) файлу ВільніПлощі.xlsx — перевіряємо лише непусті клітинки
+    // Другий рядок (індекс 1) файлу ВільніПлощі.xlsx — перевіряємо лише непусті клітинки.
+    // На відміну від Balans/Orenda, тут немає чистої відповідності 1:1 з FreeSpaceIndex: через
+    // злиті клітинки в заголовку колонка 3 не має відповідного поля в enum, тому ключі - числові
+    // літерали (номери фізичних колонок), а не FreeSpaceIndex.index.
     private val freeSpaceExpected = mapOf(
         0 to "Реєстра-ційний №",
         1 to "ID об'єкту",
@@ -39,27 +43,28 @@ object InputValidator {
         11 to "Додаткові"
     )
 
-    // Другий рядок (індекс 1) файлу Оренда.xlsx
+    // Другий рядок (індекс 1) файлу Оренда.xlsx. Ключі - OrendaIndex.index, щоб перевірка колонок
+    // не розходилась з парсингом у Orenda.kt, якщо колонки колись зміщаться.
     private val orendaExpected = mapOf(
-        0 to "ID договору",
-        1 to "ID об’єктів за договором",
-        2 to "Унікальний код обєкту у ЕТС Прозорро-продажі",
-        3 to "Площа що орендується, кв.м",
-        4 to "Оціночна вартість приміщень за договором, грн",
-        5 to "Дата, на яку проведена оцінка об'єкту",
-        6 to "Номер Договору Оренди",
-        7 to "Дата укладання договору",
-        8 to "Стан договору",
-        9 to "Балансоутримувач - Повна Назва",
-        10 to "Балансоутримувач - Код ЄДРПОУ",
-        11 to "Дата початку використання приміщення",
-        12 to "Закінчення Оренди",
-        13 to "Місячна орендна плата, грн.",
-        14 to "Орендар - Повна Назва",
-        15 to "Орендар - Код ЄДРПОУ",
-        16 to "Номер Будинку",
-        17 to "Дата Актуальності",
-        18 to "Фактичне Закінчення Оренди"
+        OrendaIndex.id.index to "ID договору",
+        OrendaIndex.idBuilding.index to "ID об’єктів за договором",
+        OrendaIndex.etcCode.index to "Унікальний код обєкту у ЕТС Прозорро-продажі",
+        OrendaIndex.quantity.index to "Площа що орендується, кв.м",
+        OrendaIndex.valueAmount.index to "Оціночна вартість приміщень за договором, грн",
+        OrendaIndex.valuationDate.index to "Дата, на яку проведена оцінка об'єкту",
+        OrendaIndex.contractNumber.index to "Номер Договору Оренди",
+        OrendaIndex.contractDateSigned.index to "Дата укладання договору",
+        OrendaIndex.contractStatus.index to "Стан договору",
+        OrendaIndex.contractCustodianName.index to "Балансоутримувач - Повна Назва",
+        OrendaIndex.contractCustodianId.index to "Балансоутримувач - Код ЄДРПОУ",
+        OrendaIndex.contractPeriodStartDate.index to "Дата початку використання приміщення",
+        OrendaIndex.contractPeriodEndDate.index to "Закінчення Оренди",
+        OrendaIndex.contractValueAmount.index to "Місячна орендна плата, грн.",
+        OrendaIndex.contractUserName.index to "Орендар - Повна Назва",
+        OrendaIndex.contractUserId.index to "Орендар - Код ЄДРПОУ",
+        OrendaIndex.addressLocatorDesignator.index to "Номер Будинку",
+        OrendaIndex.validityDate.index to "Дата Актуальності",
+        OrendaIndex.contractFactPeriodEndDate.index to "Фактичне Закінчення Оренди"
     )
 
     fun validateBalans(sheet: XSSFSheet) = validate(sheet, balansExpected, "Баланс.xlsx")

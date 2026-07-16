@@ -1,6 +1,5 @@
 package com.vva.buildings
 
-import com.vva.buildings.Utils.formatToId
 import com.vva.buildings.Utils.getCurrencyValue
 import com.vva.buildings.Utils.getDt8601
 import com.vva.buildings.Utils.getEtcCode
@@ -9,6 +8,7 @@ import com.vva.buildings.Utils.getQuotationString
 import com.vva.buildings.Utils.getTitleBuilding
 import com.vva.buildings.Utils.getUrl
 import com.vva.buildings.Utils.is634m
+import com.vva.buildings.Utils.numericIdOrNull
 import com.vva.buildings.Utils.setQuotation
 import org.apache.poi.ss.usermodel.CellType
 import org.apache.poi.xssf.usermodel.XSSFSheet
@@ -39,10 +39,7 @@ object Orenda {
             val row = rowIterator.next()
             if (row.rowNum < 2) continue // Skip header row
 
-            val cellIdOrenda = row.getCell(OrendaIndex.id.index)
-            if (cellIdOrenda == null) continue
-            if (cellIdOrenda.cellType != CellType.NUMERIC) continue
-            val idOrenda = formatToId(cellIdOrenda) // ID договору оренди
+            val idOrenda = numericIdOrNull(row.getCell(OrendaIndex.id.index)) ?: continue // ID договору оренди
 
             val validityDate = getDt8601(row.getCell(OrendaIndex.validityDate.index))
             if (validityDate == "null") {
