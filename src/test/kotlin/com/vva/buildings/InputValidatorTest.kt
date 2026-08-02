@@ -54,7 +54,7 @@ class InputValidatorTest {
         2 to "Унікальний код обєкту у ЕТС Прозорро-продажі",
         3 to "Вільні приміщення",
         7 to "Наявність комунікацій",
-        11 to "Додаткові",
+        11 to "Номер Будинку",
     )
 
     private val orendaHeaders = mapOf(

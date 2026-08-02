@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: buildings
+  main:
+    headless: false
+
+buildings:
+  input:
+    balans: data/input/Баланс.xlsx
+    free-space: data/input/ВільніПлощі.xlsx
+    orenda: data/input/Оренда.xlsx
+  output:
+    buildings: data/output/buildings.csv
+    buildings-rentable: data/output/buildingsRentable.csv
+    prozorro-buildings-rentable: data/output/listProzorroSales_buildingsRentable.csv
+    list: data/output/list.csv
+    prozorro-list: data/output/listProzorroSales_rented.csv
+
+logging:
+  level:
+    root: info
+  file:
+    name: logs/buildings.log
+    path: logs
