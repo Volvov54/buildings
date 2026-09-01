@@ -7,32 +7,26 @@ import org.junit.jupiter.api.Test
 class FreeSpaceIndexTest {
 
     /**
-     * На відміну від BalansIndex/BuildingIndex, тут index НЕ дорівнює ordinal: колонки 3, 5, 6
-     * у ВільніПлощі.xlsx навмисно пропущені (невикористовувані/злиті клітинки, див. CLAUDE.md).
-     * Тому кожне значення закріплюємо явно - помилковий зсув номера колонки має зловитись тут.
+     * `header` кожного поля - назва колонки у ВільніПлощі.xlsx. Для колонок площі та комунікацій
+     * це саме під-заголовок (рядок 3), а не над-заголовок (рядок 2), бо ColumnResolver сплющує
+     * два рядки заголовка з перевагою нижнього.
      */
     @Test
-    fun `index кожного поля відповідає задокументованій колонці ВільніПлощі xlsx`() {
-        assertEquals(0, FreeSpaceIndex.idSpace.index)
-        assertEquals(1, FreeSpaceIndex.buildingId.index)
-        assertEquals(2, FreeSpaceIndex.etcCode.index)
-        assertEquals(4, FreeSpaceIndex.area.index)
-        assertEquals(7, FreeSpaceIndex.utilitiesAvailableWaterSupply.index)
-        assertEquals(8, FreeSpaceIndex.utilitiesAvailableHeatingSupply.index)
-        assertEquals(9, FreeSpaceIndex.utilitiesAvailableElectricNetwork.index)
-        assertEquals(10, FreeSpaceIndex.utilitiesAvailableGasSupply.index)
-        assertEquals(11, FreeSpaceIndex.addressLocatorDesignator.index)
+    fun `заголовки унікальні для всіх полів`() {
+        val headers = FreeSpaceIndex.entries.map { it.header }
+        assertEquals(headers.size, headers.toSet().size)
     }
 
     @Test
-    fun `значення index унікальні для всіх полів`() {
-        val indices = FreeSpaceIndex.entries.map { it.index }
-        assertEquals(indices.size, indices.toSet().size)
+    fun `жоден заголовок не порожній`() {
+        assertTrue(FreeSpaceIndex.entries.all { it.header.isNotBlank() })
     }
 
     @Test
-    fun `значення index зростають у порядку оголошення полів`() {
-        val indices = FreeSpaceIndex.entries.map { it.index }
-        assertTrue(indices.zipWithNext().all { (a, b) -> a < b }, "index мають монотонно зростати: $indices")
+    fun `колонки комунікацій закріплені на під-заголовках`() {
+        assertEquals("Водопостачання", FreeSpaceIndex.utilitiesAvailableWaterSupply.header)
+        assertEquals("Теплопостачання", FreeSpaceIndex.utilitiesAvailableHeatingSupply.header)
+        assertEquals("Потужність електромережі", FreeSpaceIndex.utilitiesAvailableElectricNetwork.header)
+        assertEquals("Газопостачання", FreeSpaceIndex.utilitiesAvailableGasSupply.header)
     }
 }

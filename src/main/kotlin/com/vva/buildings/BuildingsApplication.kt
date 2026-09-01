@@ -30,17 +30,17 @@ class BuildingsApplication(
     private val logger = LoggerFactory.getLogger(BuildingsApplication::class.java)
 
     fun process() {
-        val sheetBalans = loadValidSheet(pathInputBalans, InputValidator::validateBalans)
+        val sheetBalans = loadSheet(pathInputBalans)
         val tabBuildings = getTabBalans(sheetBalans)
         logger.info("Всього будівель у таблиці: ${tabBuildings.size}")
         saveCsvFile(getBalansCsv(tabBuildings), pathOutputBuildings)
 
-        val sheetFreeSpace = loadValidSheet(pathInputFreeSpace, InputValidator::validateFreeSpace)
+        val sheetFreeSpace = loadSheet(pathInputFreeSpace)
         val freeSpaceData = createFreeSpaceTabs(tabBuildings, sheetFreeSpace)
         saveCsvFile(getProzorroCsv(freeSpaceData), pathOutputProzorro)
         saveCsvFile(getBuildingsCsv(freeSpaceData), pathOutputBuildings2)
 
-        val sheetOrenda = loadValidSheet(pathInputOrenda, InputValidator::validateOrenda)
+        val sheetOrenda = loadSheet(pathInputOrenda)
         val orendaData = Orenda.createOrendaTabs(tabBuildings, sheetOrenda)
         logger.info("Кількість записів оренди: ${orendaData.list.size}")
         saveCsvFile(Orenda.getListCsv(orendaData), pathOutputList)
@@ -49,11 +49,9 @@ class BuildingsApplication(
         logger.info("CSV-файли успішно згенеровано!")
     }
 
-    private fun loadValidSheet(path: String, validate: (XSSFSheet) -> Unit): XSSFSheet {
+    private fun loadSheet(path: String): XSSFSheet {
         logger.info("Завантаження $path...")
-        val sheet = getWorkbook(path).getSheetAt(0)
-        validate(sheet)
-        return sheet
+        return getWorkbook(path).getSheetAt(0)
     }
 
     private fun saveCsvFile(csv: String, path: String) {

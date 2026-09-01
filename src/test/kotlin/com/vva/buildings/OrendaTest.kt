@@ -4,6 +4,7 @@ import org.apache.poi.xssf.usermodel.XSSFSheet
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
@@ -16,32 +17,42 @@ class OrendaTest {
         workbook.close()
     }
 
-    /** Рядок з даними для файлу Оренда.xlsx, індексований за OrendaIndex. За замовчуванням - валідний активний договір, etcCode порожній (гілка tabList). */
+    /** Рядок з даними для Оренда.xlsx у порядку оголошення OrendaIndex. Валідний активний договір, гілка tabList. */
     private fun orendaRow(vararg overrides: Pair<OrendaIndex, Any?>): List<Any?> {
-        val row = MutableList<Any?>(OrendaIndex.entries.maxOf { it.index } + 1) { null }
-        row[OrendaIndex.id.index] = 1.0
-        row[OrendaIndex.idBuilding.index] = "100"
-        row[OrendaIndex.quantity.index] = 45.5
-        row[OrendaIndex.valueAmount.index] = 500.75
-        row[OrendaIndex.valuationDate.index] = "2021-01-01"
-        row[OrendaIndex.contractNumber.index] = "K-1"
-        row[OrendaIndex.contractDateSigned.index] = "2021-01-02"
-        row[OrendaIndex.contractStatus.index] = "Договір діє"
-        row[OrendaIndex.contractCustodianName.index] = "КП Житлобуд"
-        row[OrendaIndex.contractCustodianId.index] = "12345678"
-        row[OrendaIndex.contractPeriodStartDate.index] = "2021-02-01"
-        row[OrendaIndex.contractPeriodEndDate.index] = "2022-02-01"
-        row[OrendaIndex.contractValueAmount.index] = 250.25
-        row[OrendaIndex.contractUserName.index] = "ФОП Іванов"
-        row[OrendaIndex.contractUserId.index] = "1234567890"
-        row[OrendaIndex.addressLocatorDesignator.index] = "15"
-        row[OrendaIndex.validityDate.index] = "2021-06-01"
-        overrides.forEach { (field, value) -> row[field.index] = value }
+        val row = MutableList<Any?>(OrendaIndex.entries.size) { null }
+        val defaults = mapOf(
+            OrendaIndex.id to 1.0,
+            OrendaIndex.idBuilding to "100",
+            OrendaIndex.quantity to 45.5,
+            OrendaIndex.valueAmount to 500.75,
+            OrendaIndex.valuationDate to "2021-01-01",
+            OrendaIndex.contractNumber to "K-1",
+            OrendaIndex.contractDateSigned to "2021-01-02",
+            OrendaIndex.contractStatus to "Договір діє",
+            OrendaIndex.contractCustodianName to "КП Житлобуд",
+            OrendaIndex.contractCustodianId to "12345678",
+            OrendaIndex.contractPeriodStartDate to "2021-02-01",
+            OrendaIndex.contractPeriodEndDate to "2022-02-01",
+            OrendaIndex.contractValueAmount to 250.25,
+            OrendaIndex.contractUserName to "ФОП Іванов",
+            OrendaIndex.contractUserId to "1234567890",
+            OrendaIndex.addressLocatorDesignator to "15",
+            OrendaIndex.validityDate to "2021-06-01",
+        )
+        defaults.forEach { (field, value) -> row[field.ordinal] = value }
+        overrides.forEach { (field, value) -> row[field.ordinal] = value }
         return row
+    }
+
+    /** Записує рядок заголовків Оренда.xlsx (індекс 1), як його очікує ColumnResolver. */
+    private fun XSSFSheet.writeOrendaHeader() {
+        val header = createRow(1)
+        OrendaIndex.entries.forEach { header.createCell(it.ordinal).setCellValue(it.header) }
     }
 
     private fun sheetWithRows(vararg rows: Pair<Int, List<Any?>>): XSSFSheet {
         val sheet = workbook.createSheet()
+        if (rows.none { it.first == 1 }) sheet.writeOrendaHeader()
         rows.forEach { (rowNum, data) ->
             val row = sheet.createRow(rowNum)
             data.forEachIndexed { colIndex, value ->
@@ -87,12 +98,33 @@ class OrendaTest {
     // --- фільтрація рядків ---
 
     @Test
-    fun `createOrendaTabs - ігнорує перші два рядки як заголовок`() {
-        val sheet = sheetWithRows(0 to orendaRow(), 1 to orendaRow())
+    fun `createOrendaTabs - ігнорує декоративний рядок 0 та рядок заголовків`() {
+        val sheet = sheetWithRows(0 to orendaRow())
         val result = Orenda.createOrendaTabs(tabBuildings, sheet)
 
         assertTrue(result.list.isEmpty())
         assertTrue(result.prozorro.isEmpty())
+    }
+
+    @Test
+    fun `createOrendaTabs - працює незалежно від порядку колонок у файлі`() {
+        val last = OrendaIndex.entries.size - 1
+        val sheet = workbook.createSheet()
+        val header = sheet.createRow(1)
+        val data = sheet.createRow(2)
+        val values = orendaRow()
+        OrendaIndex.entries.forEach { field ->
+            val destCol = last - field.ordinal
+            header.createCell(destCol).setCellValue(field.header)
+            val cell = data.createCell(destCol)
+            when (val v = values[field.ordinal]) {
+                is Double -> cell.setCellValue(v)
+                is String -> cell.setCellValue(v)
+                else -> {} // залишаємо BLANK
+            }
+        }
+        val result = Orenda.createOrendaTabs(tabBuildings, sheet)
+        assertEquals("1-100", result.list.single()[Orenda.headerList.indexOf("id")])
     }
 
     @Test
@@ -104,11 +136,11 @@ class OrendaTest {
 
     @Test
     fun `createOrendaTabs - пропускає рядок з фізично відсутньою клітинкою id`() {
-        // На відміну від orendaRow(), тут клітинка id взагалі не створюється.
         val sheet = workbook.createSheet()
+        sheet.writeOrendaHeader()
         val row = sheet.createRow(2)
-        row.createCell(OrendaIndex.idBuilding.index).setCellValue("100")
-        // OrendaIndex.id.index (0) навмисно не створюється
+        row.createCell(OrendaIndex.idBuilding.ordinal).setCellValue("100")
+        // OrendaIndex.id (колонка 0) навмисно не створюється
 
         val result = Orenda.createOrendaTabs(tabBuildings, sheet)
         assertTrue(result.list.isEmpty())
@@ -181,8 +213,6 @@ class OrendaTest {
 
     @Test
     fun `createOrendaTabs - друга будівля з переліку відсутня в tabBuildings не заважає обробці`() {
-        // is634m перевіряє групу призначення для кожного ID зі списку; відсутній у tabBuildings ID
-        // просто не враховується (не приймається за 634), а не спричиняє помилку.
         val sheet = sheetWithRows(2 to orendaRow(OrendaIndex.idBuilding to "100;999"))
         val result = Orenda.createOrendaTabs(tabBuildings, sheet)
 
@@ -211,6 +241,17 @@ class OrendaTest {
         assertEquals(2, result.list.size)
         val ids = result.list.map { it[Orenda.headerList.indexOf("id")] }
         assertEquals(listOf("1-100", "3-100"), ids)
+    }
+
+    @Test
+    fun `createOrendaTabs - кидає виняток якщо у файлі бракує обов'язкової колонки`() {
+        val sheet = workbook.createSheet()
+        val header = sheet.createRow(1)
+        OrendaIndex.entries
+            .filter { it != OrendaIndex.contractStatus }
+            .forEach { header.createCell(it.ordinal).setCellValue(it.header) }
+
+        assertThrows(IllegalStateException::class.java) { Orenda.createOrendaTabs(tabBuildings, sheet) }
     }
 
     // --- гілка Prozorro (etcCode рядкового типу) ---

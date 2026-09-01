@@ -4,6 +4,7 @@ import org.apache.poi.xssf.usermodel.XSSFSheet
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
@@ -16,23 +17,33 @@ class FreeSpaceTest {
         workbook.close()
     }
 
-    /** Рядок з даними для файлу ВільніПлощі.xlsx, індексований за FreeSpaceIndex. За замовчуванням etcCode порожній (гілка tabBuildings2). */
+    /** Рядок з даними для ВільніПлощі.xlsx у порядку оголошення FreeSpaceIndex. Гілка tabBuildings2 (etcCode порожній). */
     private fun freeSpaceRow(vararg overrides: Pair<FreeSpaceIndex, Any?>): List<Any?> {
-        val row = MutableList<Any?>(FreeSpaceIndex.entries.maxOf { it.index } + 1) { null }
-        row[FreeSpaceIndex.idSpace.index] = 1.0
-        row[FreeSpaceIndex.buildingId.index] = 100.0
-        row[FreeSpaceIndex.area.index] = 25.5
-        row[FreeSpaceIndex.utilitiesAvailableWaterSupply.index] = "Так"
-        row[FreeSpaceIndex.utilitiesAvailableHeatingSupply.index] = "Так"
-        row[FreeSpaceIndex.utilitiesAvailableElectricNetwork.index] = "Мережа 380В"
-        row[FreeSpaceIndex.utilitiesAvailableGasSupply.index] = "Ні"
-        row[FreeSpaceIndex.addressLocatorDesignator.index] = "10А"
-        overrides.forEach { (field, value) -> row[field.index] = value }
+        val row = MutableList<Any?>(FreeSpaceIndex.entries.size) { null }
+        val defaults = mapOf(
+            FreeSpaceIndex.idSpace to 1.0,
+            FreeSpaceIndex.buildingId to 100.0,
+            FreeSpaceIndex.area to 25.5,
+            FreeSpaceIndex.utilitiesAvailableWaterSupply to "Так",
+            FreeSpaceIndex.utilitiesAvailableHeatingSupply to "Так",
+            FreeSpaceIndex.utilitiesAvailableElectricNetwork to "Мережа 380В",
+            FreeSpaceIndex.utilitiesAvailableGasSupply to "Ні",
+            FreeSpaceIndex.addressLocatorDesignator to "10А",
+        )
+        defaults.forEach { (field, value) -> row[field.ordinal] = value }
+        overrides.forEach { (field, value) -> row[field.ordinal] = value }
         return row
+    }
+
+    /** Записує рядок заголовків ВільніПлощі.xlsx (індекс 2), як його очікує ColumnResolver. */
+    private fun XSSFSheet.writeFreeSpaceHeader() {
+        val header = createRow(2)
+        FreeSpaceIndex.entries.forEach { header.createCell(it.ordinal).setCellValue(it.header) }
     }
 
     private fun sheetWithRows(vararg rows: Pair<Int, List<Any?>>): XSSFSheet {
         val sheet = workbook.createSheet()
+        if (rows.none { it.first == 2 }) sheet.writeFreeSpaceHeader()
         rows.forEach { (rowNum, data) ->
             val row = sheet.createRow(rowNum)
             data.forEachIndexed { colIndex, value ->
@@ -65,12 +76,33 @@ class FreeSpaceTest {
     // --- createFreeSpaceTabs ---
 
     @Test
-    fun `createFreeSpaceTabs - ігнорує перші три рядки як заголовок`() {
-        val sheet = sheetWithRows(0 to freeSpaceRow(), 1 to freeSpaceRow(), 2 to freeSpaceRow())
+    fun `createFreeSpaceTabs - ігнорує рядки 0-1 та рядок заголовків`() {
+        val sheet = sheetWithRows(0 to freeSpaceRow(), 1 to freeSpaceRow())
         val result = FreeSpace.createFreeSpaceTabs(tabBuildings, sheet)
 
         assertTrue(result.prozorro.isEmpty())
         assertTrue(result.buildings.isEmpty())
+    }
+
+    @Test
+    fun `createFreeSpaceTabs - працює незалежно від порядку колонок у файлі`() {
+        val last = FreeSpaceIndex.entries.size - 1
+        val sheet = workbook.createSheet()
+        val header = sheet.createRow(2)
+        val data = sheet.createRow(3)
+        val values = freeSpaceRow()
+        FreeSpaceIndex.entries.forEach { field ->
+            val destCol = last - field.ordinal
+            header.createCell(destCol).setCellValue(field.header)
+            val cell = data.createCell(destCol)
+            when (val v = values[field.ordinal]) {
+                is Double -> cell.setCellValue(v)
+                is String -> cell.setCellValue(v)
+                else -> {} // залишаємо BLANK
+            }
+        }
+        val result = FreeSpace.createFreeSpaceTabs(tabBuildings, sheet)
+        assertEquals("1-100", result.buildings.single()[0])
     }
 
     @Test
@@ -93,11 +125,11 @@ class FreeSpaceTest {
 
     @Test
     fun `createFreeSpaceTabs - пропускає рядок з фізично відсутньою клітинкою idSpace`() {
-        // На відміну від freeSpaceRow(), тут клітинка idSpace взагалі не створюється.
         val sheet = workbook.createSheet()
+        sheet.writeFreeSpaceHeader()
         val row = sheet.createRow(3)
-        row.createCell(FreeSpaceIndex.buildingId.index).setCellValue(100.0)
-        // FreeSpaceIndex.idSpace.index (0) навмисно не створюється
+        row.createCell(FreeSpaceIndex.buildingId.ordinal).setCellValue(100.0)
+        // FreeSpaceIndex.idSpace (колонка 0) навмисно не створюється
 
         val result = FreeSpace.createFreeSpaceTabs(tabBuildings, sheet)
 
@@ -173,6 +205,19 @@ class FreeSpaceTest {
         val data = result.buildings.single()
 
         assertEquals("false", data[FreeSpace.headerBuildings2.indexOf("utilitiesAvailableWaterSupply")])
+    }
+
+    @Test
+    fun `createFreeSpaceTabs - кидає виняток якщо у файлі бракує обов'язкової колонки`() {
+        val sheet = workbook.createSheet()
+        val header = sheet.createRow(2)
+        FreeSpaceIndex.entries
+            .filter { it != FreeSpaceIndex.area }
+            .forEach { header.createCell(it.ordinal).setCellValue(it.header) }
+
+        assertThrows(IllegalStateException::class.java) {
+            FreeSpace.createFreeSpaceTabs(tabBuildings, sheet)
+        }
     }
 
     // --- getProzorroCsv / getBuildingsCsv ---

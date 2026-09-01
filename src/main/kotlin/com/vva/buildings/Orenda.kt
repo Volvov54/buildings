@@ -28,6 +28,9 @@ object Orenda {
         sheet: XSSFSheet
     ): OrendaData {
         logger.info("Start creating Orenda tabs")
+        val col = ColumnResolver.resolveOrenda(sheet)
+        fun c(field: OrendaIndex) = col.getValue(field)
+
         val tabList = mutableListOf<List<String>>()
         val tabListProzorro = mutableListOf<List<String>>()
         var o634Count = 0
@@ -39,9 +42,9 @@ object Orenda {
             val row = rowIterator.next()
             if (row.rowNum < 2) continue // Skip header row
 
-            val idOrenda = numericIdOrNull(row.getCell(OrendaIndex.id.index)) ?: continue // ID договору оренди
+            val idOrenda = numericIdOrNull(row.getCell(c(OrendaIndex.id))) ?: continue // ID договору оренди
 
-            val validityDate = getDt8601(row.getCell(OrendaIndex.validityDate.index))
+            val validityDate = getDt8601(row.getCell(c(OrendaIndex.validityDate)))
             if (validityDate == "null") {
                 logger.warn("Пропускаємо рядок ${row.rowNum}, idOrenda: $idOrenda - відсутня дата актуальності")
                 countValidityDateEmpty++
@@ -53,11 +56,11 @@ object Orenda {
                 continue
             }
 
-            val cellContractStatus = row.getCell(OrendaIndex.contractStatus.index)
+            val cellContractStatus = row.getCell(c(OrendaIndex.contractStatus))
             val contractStatus = cellContractStatus.toString().trim()
             if (contractStatus != "Договір діє") continue
 
-            val idBuildingCell = row.getCell(OrendaIndex.idBuilding.index) // cell ID об'єкту
+            val idBuildingCell = row.getCell(c(OrendaIndex.idBuilding)) // cell ID об'єкту
             val idBuildingArray = idBuildingCell.toString()
             if (idBuildingArray.isBlank()) {
                 logger.warn("ID об'єкту порожній у рядку ${row.rowNum}, idOrenda: $idOrenda")
@@ -78,7 +81,7 @@ object Orenda {
             }
 
             val cellEtcCode =
-                row.getCell(OrendaIndex.etcCode.index) // Унікальний код обєкту у ЕТС Прозорро-продажі
+                row.getCell(c(OrendaIndex.etcCode)) // Унікальний код обєкту у ЕТС Прозорро-продажі
 
             if (cellEtcCode.cellType == CellType.STRING) {
                 logger.warn("Etc code is STRING: $cellEtcCode")
@@ -116,7 +119,7 @@ object Orenda {
                     building[BuildingIndex.addressPostStreet.index]
                 ) // addressPostStreet - Вулиця населеного пункту
                 data.add(
-                    setQuotation(row.getCell(OrendaIndex.addressLocatorDesignator.index))
+                    setQuotation(row.getCell(c(OrendaIndex.addressLocatorDesignator)))
                 ) // addressLocatorDesignator - Позначення будівлі/споруди
                 data.add(
                     building[BuildingIndex.addressLocatorBuilding.index]
@@ -128,56 +131,56 @@ object Orenda {
                     building[BuildingIndex.unitName.index]
                 ) // unitName - Одиниця виміру площі
                 data.add(
-                    row.getCell(OrendaIndex.quantity.index).toString()
+                    row.getCell(c(OrendaIndex.quantity)).toString()
                 ) // quantity - Площа приміщення, що використовується, кв.м
                 data.add(
-                    getCurrencyValue(row.getCell(OrendaIndex.valueAmount.index))
+                    getCurrencyValue(row.getCell(c(OrendaIndex.valueAmount)))
                 ) // valueAmount - Оціночна вартість приміщень за договором, грн
                 data.add("UAH") // currencyCode - Код валюти
                 data.add(
-                    getDt8601(row.getCell(OrendaIndex.valuationDate.index))
+                    getDt8601(row.getCell(c(OrendaIndex.valuationDate)))
                 ) // valuationDate - Дата, на яку проведена оцінка об'єкту
                 data.add(
-                    setQuotation(row.getCell(OrendaIndex.contractNumber.index))
+                    setQuotation(row.getCell(c(OrendaIndex.contractNumber)))
                 ) // contractNumber - Номер Договору Оренди
                 data.add(
-                    getDt8601(row.getCell(OrendaIndex.contractDateSigned.index))
+                    getDt8601(row.getCell(c(OrendaIndex.contractDateSigned)))
                 ) // contractDateSigned - Дата укладання договору
                 data.add("null") // contractUrl - URL договору (не вказано в даних)
                 data.add(
-                    setQuotation(row.getCell(OrendaIndex.contractStatus.index))
+                    setQuotation(row.getCell(c(OrendaIndex.contractStatus)))
                 ) // contractStatus - Стан договору
                 data.add("null") // contractPurpose - Цільове призначення (не вказано в даних)
                 data.add("null") // contractRentalRate - Орендна ставка (не вказано в даних)
                 data.add(
-                    setQuotation(row.getCell(OrendaIndex.contractCustodianName.index))
+                    setQuotation(row.getCell(c(OrendaIndex.contractCustodianName)))
                 ) // contractCustodianName - Балансоутримувач - Повна Назва
                 data.add(
-                    setQuotation(row.getCell(OrendaIndex.contractCustodianId.index))
+                    setQuotation(row.getCell(c(OrendaIndex.contractCustodianId)))
                 ) // contractCustodianId - Балансоутримувач - Код ЄДРПОУ
                 data.add(
-                    setQuotation(row.getCell(OrendaIndex.contractUserName.index))
+                    setQuotation(row.getCell(c(OrendaIndex.contractUserName)))
                 ) // contractUserName - Орендар - Повна Назва
                 data.add(
                     getQuotationString(
                         getNotPrivate(
                             row.getCell(
-                                OrendaIndex.contractUserId.index
+                                c(OrendaIndex.contractUserId)
                             ).toString()
                         )
                     )
                 ) // contractUserId - Орендар - Код ЄДРПОУ
                 data.add(
-                    getDt8601(row.getCell(OrendaIndex.contractPeriodStartDate.index))
+                    getDt8601(row.getCell(c(OrendaIndex.contractPeriodStartDate)))
                 ) // contractPeriodStartDate - Початок оренди
                 data.add(
-                    getDt8601(row.getCell(OrendaIndex.contractPeriodEndDate.index))
+                    getDt8601(row.getCell(c(OrendaIndex.contractPeriodEndDate)))
                 ) // contractPeriodEndDate - Закінченя оренди
                 data.add("null") // contractPeriodMaxExtentDate - Максимальна дата оренди (не вказано в даних)
                 data.add("null") // contractSchedule - Графік оренди (не вказано в даних)
                 data.add("Місяць") // contractValuePeriod - Період вартості
                 data.add(
-                    getCurrencyValue(row.getCell(OrendaIndex.contractValueAmount.index))
+                    getCurrencyValue(row.getCell(c(OrendaIndex.contractValueAmount)))
                 ) // contractValueAmount - Сума вартості договору
                 data.add("null") // contractValueDescription - Опис вартості договору (не вказано в даних)
                 data.add(validityDate) // validityDate - Дата Актуальності

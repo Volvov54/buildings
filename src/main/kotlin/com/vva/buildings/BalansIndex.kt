@@ -1,23 +1,27 @@
 package com.vva.buildings
 
-enum class BalansIndex(val index: Int) {
-    id(0),                    // ID об'єкту
-    title(1),                 // Назва об'єкту
-    kind(2),                  // Вид Об'єкту відповідно Класифікатора майна
-    type(3),                  // Тип Об'єкту
-    description(4),           // Призначення
-    balanceHolderName(5),     // Балансоутримувач - Повна Назва
-    balanceHolderId(6),       // Балансоутримувач - Код ЄДРПОУ
-    dk018classId(7),          // Вид Об'єкту відповідно Класифікатора майна (код)
-    dk018classDescription(8), // Вид Об'єкту відповідно Класифікатора майна (назва)
-    area(9),                  // Загальна Площа будинку (кв.м.)
-    addressPostCode(10),      // Поштовий індекс
-    addressPostDistrict(11),  // Район
-    addressThoroughfare(12),  // Назва Вулиці
-    registrationId(13),       // Реєстрація у Державному реєстрі (Реєстраційний номер об'єкту нерухомого майна)
-    condition(14),            // Стан об'єкту
-    validityDate(15),         // Дата Актуальності
-    destinationGroup(16),     // Група призначення
-    addressLocatorDesignator(17), // Номер будинку
-    fieldOfActivity(18),     // Сфера діяльності
+/**
+ * Логічні поля файлу Баланс.xlsx. `header` — назва колонки у рядку заголовків (індекс 1),
+ * за якою ColumnResolver знаходить фізичний номер колонки. Порядок оголошення значення не має.
+ */
+enum class BalansIndex(val header: String) {
+    id("ID об'єкту"),
+    title("Назва Об'єкту"),
+    kind("Вид Об'єкту відповідно Класифікатора майна"),
+    type("Тип Об'єкту"),
+    description("Призначення"),
+    balanceHolderName("Балансоутримувач - Повна Назва"),
+    balanceHolderId("Балансоутримувач - Код ЄДРПОУ"),
+    dk018classId("Вид Об'єкту відповідно Класифікатора майна (код)"),
+    dk018classDescription("Вид Об'єкту відповідно Класифікатора майна (назва)"),
+    area("Загальна Площа будинку (кв.м.)"),
+    addressPostCode("Поштовий індекс"),
+    addressPostDistrict("Район"),
+    addressThoroughfare("Назва Вулиці"),
+    registrationId("Реєстрація у Державному реєстрі (Реєстраційний номер об'єкту нерухомого майна)"),
+    condition("Стан Об'єкту"),
+    validityDate("Дата Актуальності"),
+    destinationGroup("Група Призначення"),
+    addressLocatorDesignator("Номер Будинку"),
+    fieldOfActivity("Сфера діяльності"),
 }

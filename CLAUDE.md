@@ -18,7 +18,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ./gradlew test
 
 # Run a single test class
-./gradlew test --tests "com.vva.buildings.InputValidatorTest"
+./gradlew test --tests "com.vva.buildings.ColumnResolverTest"
 
 # Force re-run tests (bypass UP-TO-DATE cache)
 ./gradlew cleanTest test
@@ -38,9 +38,9 @@ The app reads Excel files from `data/input/` and writes CSV files to `data/outpu
 
 `BuildingsApplication.process()` orchestrates three sequential steps:
 
-1. **Balans** (`Balans.kt`) — reads `Баланс.xlsx`, validates headers, builds `tabBuildings: Map<String, List<String>>` keyed by building ID
-2. **FreeSpace** (`FreeSpace.kt`) — reads `ВільніПлощі.xlsx`, validates headers, cross-references `tabBuildings`, returns `FreeSpaceData(prozorro, buildings)`
-3. **Orenda** (`Orenda.kt`) — reads `Оренда.xlsx`, validates headers, cross-references `tabBuildings`, returns `OrendaData(list, prozorro)`
+1. **Balans** (`Balans.kt`) — reads `Баланс.xlsx`, resolves columns by header, builds `tabBuildings: Map<String, List<String>>` keyed by building ID
+2. **FreeSpace** (`FreeSpace.kt`) — reads `ВільніПлощі.xlsx`, resolves columns by header, cross-references `tabBuildings`, returns `FreeSpaceData(prozorro, buildings)`
+3. **Orenda** (`Orenda.kt`) — reads `Оренда.xlsx`, resolves columns by header, cross-references `tabBuildings`, returns `OrendaData(list, prozorro)`
 
 All processors are Kotlin `object` singletons (not Spring beans). State is returned as data classes — no shared mutable fields.
 
@@ -56,20 +56,22 @@ All processors are Kotlin `object` singletons (not Spring beans). State is retur
 
 ### Domain Model
 
-Each source file has a paired enum defining its column indices:
+Each source file has a paired enum mapping logical fields to **expected header text** (not fixed column positions):
 
-- `BalansIndex` (19 fields) — column positions in `Баланс.xlsx`
-- `FreeSpaceIndex` (13 fields) — column positions in `ВільніПлощі.xlsx`
-- `OrendaIndex` (19 fields) — column positions in `Оренда.xlsx`
-- `BuildingIndex` (36 fields) — canonical in-memory building record shared across all three processors
+- `BalansIndex` (19 fields) — `header` = column name in `Баланс.xlsx`
+- `FreeSpaceIndex` (9 fields) — `header` = column name in `ВільніПлощі.xlsx`
+- `OrendaIndex` (19 fields) — `header` = column name in `Оренда.xlsx`
+- `BuildingIndex` (36 fields) — canonical in-memory building record shared across all three processors; still positional (`index`), it is an internal layout, not tied to Excel
 
-When Excel columns shift, update the relevant `*Index` enum and `InputValidator` together.
+When Excel headers are reworded, update the `header` string of the relevant `*Index` entry. Column **order** and extra/unknown columns no longer matter.
 
-### Input Validation (`InputValidator.kt`)
+### Column Resolution (`ColumnResolver.kt`)
 
-Called at the start of each file's processing. Reads row index 1 (second row) and compares each cell against hardcoded expected header strings. Throws `IllegalStateException` on mismatch, which surfaces as "Помилка!" in the UI.
+The first step of each file's processing calls `ColumnResolver.resolve*(sheet)`, which scans the header row(s) and returns a `Map<*Index, Int>` (logical field → physical column). Completeness is enforced: if any `*Index` entry's `header` is not found, it throws `IllegalStateException` listing the missing columns, which surfaces as "Помилка!" in the UI. Matching is strict — the file's header must equal the enum `header` after `trim()`; a reworded header is a deliberate error, not a silent skip.
 
-**Important:** `ВільніПлощі.xlsx` has merged cells in row 1, so only 6 non-empty columns are validated. `Оренда.xlsx` column `[1]` uses Unicode U+2019 (`'` right single quotation mark) instead of U+0027 — this is already encoded correctly in the source.
+Header rows scanned: `Баланс`/`Оренда` — row index 1 only; `ВільніПлощі` — rows 1–2 flattened (its header spans two rows: super-headers like "Наявність комунікацій" plus sub-headers like "Водопостачання"), the lower row wins per column, so `FreeSpaceIndex` stores the sub-headers.
+
+`Оренда.xlsx` column `ID об’єктів за договором` and `ВільніПлощі.xlsx` column `Загальна площа об’єкта` use Unicode U+2019 (`'`) instead of U+0027 — encoded correctly in the enum `header` strings.
 
 ### Key Filtering Rules
 

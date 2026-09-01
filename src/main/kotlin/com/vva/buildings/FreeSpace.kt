@@ -21,6 +21,9 @@ object FreeSpace {
     val logger: Logger = LoggerFactory.getLogger(FreeSpace::class.java)
 
     fun createFreeSpaceTabs(tabBuildings: Map<String, List<String>>, sheet: XSSFSheet): FreeSpaceData {
+        val col = ColumnResolver.resolveFreeSpace(sheet)
+        fun c(field: FreeSpaceIndex) = col.getValue(field)
+
         val tabProzorro = mutableListOf<List<String>>()
         val tabBuildings2 = mutableListOf<List<String>>()
         val rowIterator = sheet.iterator()
@@ -28,9 +31,9 @@ object FreeSpace {
             val row = rowIterator.next()
             if (row.rowNum < 3) continue // Skip header row
 
-            val idSpace = numericIdOrNull(row.getCell(FreeSpaceIndex.idSpace.index)) ?: continue // Реєстра-ційний №
+            val idSpace = numericIdOrNull(row.getCell(c(FreeSpaceIndex.idSpace))) ?: continue // Реєстра-ційний №
 
-            val idBuilding = numericIdOrNull(row.getCell(FreeSpaceIndex.buildingId.index)) ?: run {
+            val idBuilding = numericIdOrNull(row.getCell(c(FreeSpaceIndex.buildingId))) ?: run {
                 logger.warn("Рядок ${row.rowNum}: ID об'єкту не є числом, пропускаємо")
                 continue
             }
@@ -41,7 +44,7 @@ object FreeSpace {
             }
 
             val cellEtcCode = row.getCell(
-                FreeSpaceIndex.etcCode.index
+                c(FreeSpaceIndex.etcCode)
             ) // Унікальний код обєкту у ЕТС Прозорро-продажі
 
             if (cellEtcCode.cellType == CellType.STRING) {
@@ -68,7 +71,7 @@ object FreeSpace {
                 data.add(building[BuildingIndex.dk018classDescription.index]) // dk018classDescription
                 data.add(building[BuildingIndex.unitName.index]) // unitName
                 data.add(
-                    setQuotation(row.getCell(FreeSpaceIndex.area.index))
+                    setQuotation(row.getCell(c(FreeSpaceIndex.area)))
                 ) // buildingArea
                 data.add(building[BuildingIndex.CATUTTC.index]) // CATUTTC
                 data.add(building[BuildingIndex.addressPostCode.index]) // addressPostCode
@@ -80,7 +83,7 @@ object FreeSpace {
                 data.add(building[BuildingIndex.addressPostDistrict.index]) // addressPostDistrict
                 data.add(building[BuildingIndex.addressPostStreet.index]) // addressPostStreet
                 data.add(
-                    setQuotation(row.getCell(FreeSpaceIndex.addressLocatorDesignator.index))
+                    setQuotation(row.getCell(c(FreeSpaceIndex.addressLocatorDesignator)))
                 ) // addressLocatorDesignator
                 data.add(building[BuildingIndex.addressLocatorBuilding.index]) // addressLocatorBuilding
                 data.add(building[BuildingIndex.addressLocatorName.index]) // addressLocatorName
@@ -92,28 +95,16 @@ object FreeSpace {
                 data.add(building[BuildingIndex.utilitiesAvailable.index]) // utilitiesAvailable
                 data.add(building[BuildingIndex.validityDate.index]) // validityDate
                 data.add(
-                    getValueBool(
-                        row,
-                        FreeSpaceIndex.utilitiesAvailableWaterSupply.index
-                    )
+                    getValueBool(row, c(FreeSpaceIndex.utilitiesAvailableWaterSupply))
                 ) // utilitiesAvailableWaterSupply
                 data.add(
-                    getValueBool(
-                        row,
-                        FreeSpaceIndex.utilitiesAvailableHeatingSupply.index
-                    )
+                    getValueBool(row, c(FreeSpaceIndex.utilitiesAvailableHeatingSupply))
                 ) // utilitiesAvailableHeatingSupply
                 data.add(
-                    getValueStr(
-                        row,
-                        FreeSpaceIndex.utilitiesAvailableElectricNetwork.index
-                    )
+                    getValueStr(row, c(FreeSpaceIndex.utilitiesAvailableElectricNetwork))
                 ) // utilitiesAvailableElectricNetwork
                 data.add(
-                    getValueBool(
-                        row,
-                        FreeSpaceIndex.utilitiesAvailableGasSupply.index
-                    )
+                    getValueBool(row, c(FreeSpaceIndex.utilitiesAvailableGasSupply))
                 ) // utilitiesAvailableGasSupply
 
                 tabBuildings2.add(data)

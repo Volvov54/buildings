@@ -17,36 +17,48 @@ class BalansTest {
         workbook.close()
     }
 
-    /** Рядок з коректними даними для файлу Баланс.xlsx, індексований за BalansIndex. */
+    /** Рядок з коректними даними для файлу Баланс.xlsx. Колонки розкладені у порядку оголошення BalansIndex. */
     private fun balansRow(vararg overrides: Pair<BalansIndex, Any?>): List<Any?> {
-        val row = mutableListOf<Any?>(
-            12345.0,        // id
-            "Будівля 1",     // title
-            "Нежитлова",     // kind
-            "Тип 1",         // type
-            "Офіс",          // description
-            "КП Житлобуд",   // balanceHolderName
-            "12345678",      // balanceHolderId
-            "111",           // dk018classId
-            "Будівлі",       // dk018classDescription
-            100.5,           // area
-            "01001",         // addressPostCode
-            "Печерський",    // addressPostDistrict
-            "Хрещатик",      // addressThoroughfare
-            "REG-1",         // registrationId
-            "Задовільний",   // condition
-            "2021-01-01",    // validityDate
-            "100",           // destinationGroup
-            "5",             // addressLocatorDesignator
-            "Управління",    // fieldOfActivity
+        val row = MutableList<Any?>(BalansIndex.entries.size) { null }
+        val defaults = mapOf(
+            BalansIndex.id to 12345.0,
+            BalansIndex.title to "Будівля 1",
+            BalansIndex.kind to "Нежитлова",
+            BalansIndex.type to "Тип 1",
+            BalansIndex.description to "Офіс",
+            BalansIndex.balanceHolderName to "КП Житлобуд",
+            BalansIndex.balanceHolderId to "12345678",
+            BalansIndex.dk018classId to "111",
+            BalansIndex.dk018classDescription to "Будівлі",
+            BalansIndex.area to 100.5,
+            BalansIndex.addressPostCode to "01001",
+            BalansIndex.addressPostDistrict to "Печерський",
+            BalansIndex.addressThoroughfare to "Хрещатик",
+            BalansIndex.registrationId to "REG-1",
+            BalansIndex.condition to "Задовільний",
+            BalansIndex.validityDate to "2021-01-01",
+            BalansIndex.destinationGroup to "100",
+            BalansIndex.addressLocatorDesignator to "5",
+            BalansIndex.fieldOfActivity to "Управління",
         )
-        overrides.forEach { (field, value) -> row[field.index] = value }
+        defaults.forEach { (field, value) -> row[field.ordinal] = value }
+        overrides.forEach { (field, value) -> row[field.ordinal] = value }
         return row
     }
 
-    /** Створює аркуш, де рядки з даними розміщені за вказаними номерами (rowNum). */
+    /** Записує рядок заголовків Баланс.xlsx (індекс 1), як його очікує ColumnResolver. */
+    private fun XSSFSheet.writeBalansHeader() {
+        val header = createRow(1)
+        BalansIndex.entries.forEach { header.createCell(it.ordinal).setCellValue(it.header) }
+    }
+
+    /**
+     * Створює аркуш з рядком заголовків (індекс 1) і рядками даних за вказаними номерами (rowNum).
+     * Заголовок додається автоматично, якщо номер 1 не заданий явно.
+     */
     private fun sheetWithRows(vararg rows: Pair<Int, List<Any?>>): XSSFSheet {
         val sheet = workbook.createSheet()
+        if (rows.none { it.first == 1 }) sheet.writeBalansHeader()
         rows.forEach { (rowNum, data) ->
             val row = sheet.createRow(rowNum)
             data.forEachIndexed { colIndex, value ->
@@ -76,6 +88,26 @@ class BalansTest {
         assertEquals("22883141", building[BuildingIndex.ownerId.index])
         assertEquals("\"12345678\"", building[BuildingIndex.balanceHolderId.index])
         assertEquals("кв. м.", building[BuildingIndex.unitName.index])
+    }
+
+    @Test
+    fun `getTabBalans - працює незалежно від порядку колонок у файлі`() {
+        // Заголовки та дані у зворотному порядку колонок.
+        val last = BalansIndex.entries.size - 1
+        val sheet = workbook.createSheet()
+        val header = sheet.createRow(1)
+        val data = sheet.createRow(2)
+        val values = balansRow()
+        BalansIndex.entries.forEach { field ->
+            header.createCell(last - field.ordinal).setCellValue(field.header)
+            when (val v = values[field.ordinal]) {
+                is Double -> data.createCell(last - field.ordinal).setCellValue(v)
+                is String -> data.createCell(last - field.ordinal).setCellValue(v)
+            }
+        }
+        val building = Balans.getTabBalans(sheet).getValue("12345")
+        assertEquals("\"Будівля 1\"", building[BuildingIndex.title.index])
+        assertEquals("\"Печерський\"", building[BuildingIndex.addressPostDistrict.index])
     }
 
     @Test
@@ -147,20 +179,20 @@ class BalansTest {
 
     @Test
     fun `getTabBalans - пропускає рядок з фізично відсутньою клітинкою id`() {
-        // На відміну від balansRow(), тут клітинка id взагалі не створюється (row.getCell поверне null),
-        // а не просто залишається BLANK.
+        // Клітинка id взагалі не створюється (row.getCell поверне null), а не просто BLANK.
         val sheet = workbook.createSheet()
+        sheet.writeBalansHeader()
         val row = sheet.createRow(2)
-        row.createCell(BalansIndex.balanceHolderId.index).setCellValue("12345678")
-        row.createCell(BalansIndex.fieldOfActivity.index).setCellValue("Управління")
-        // BalansIndex.id.index (0) навмисно не створюється
+        row.createCell(BalansIndex.balanceHolderId.ordinal).setCellValue("12345678")
+        row.createCell(BalansIndex.fieldOfActivity.ordinal).setCellValue("Управління")
+        // BalansIndex.id (колонка 0) навмисно не створюється
 
         assertTrue(Balans.getTabBalans(sheet).isEmpty())
     }
 
     @Test
-    fun `getTabBalans - ігнорує перші два рядки як заголовок`() {
-        val sheet = sheetWithRows(0 to balansRow(), 1 to balansRow())
+    fun `getTabBalans - ігнорує декоративний рядок 0 та рядок заголовків`() {
+        val sheet = sheetWithRows(0 to balansRow())
         assertTrue(Balans.getTabBalans(sheet).isEmpty())
     }
 
@@ -176,6 +208,19 @@ class BalansTest {
         val sheet = sheetWithRows(2 to balansRow(BalansIndex.registrationId to "REG-1"))
         val building = Balans.getTabBalans(sheet).getValue("12345")
         assertEquals("Зареєстровано", building[BuildingIndex.registrationStatus.index])
+    }
+
+    @Test
+    fun `getTabBalans - кидає виняток якщо у файлі бракує обов'язкової колонки`() {
+        val sheet = workbook.createSheet()
+        val header = sheet.createRow(1)
+        BalansIndex.entries
+            .filter { it != BalansIndex.area }
+            .forEach { header.createCell(it.ordinal).setCellValue(it.header) }
+
+        org.junit.jupiter.api.Assertions.assertThrows(IllegalStateException::class.java) {
+            Balans.getTabBalans(sheet)
+        }
     }
 
     // --- getBalansCsv ---

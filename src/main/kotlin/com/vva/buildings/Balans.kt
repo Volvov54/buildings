@@ -15,9 +15,11 @@ import org.slf4j.LoggerFactory
 object Balans {
     private val logger = LoggerFactory.getLogger(Balans::class.java)
 
-    private fun Row.quoted(index: BalansIndex): String = setQuotation(getCell(index.index))
-
     fun getTabBalans(sheet: XSSFSheet): Map<String, List<String>> {
+        val col = ColumnResolver.resolveBalans(sheet)
+        fun Row.cell(field: BalansIndex) = getCell(col.getValue(field))
+        fun Row.quoted(field: BalansIndex): String = setQuotation(getCell(col.getValue(field)))
+
         val tabBuildings = mutableMapOf<String, MutableList<String>>()
         val rowIterator = sheet.iterator()
 
@@ -25,15 +27,15 @@ object Balans {
             val row = rowIterator.next()
             if (row.rowNum < 2) continue // Skip header row
 
-            val balanceHolderId = row.getCell(BalansIndex.balanceHolderId.index).toString().trim()
+            val balanceHolderId = row.cell(BalansIndex.balanceHolderId).toString().trim()
             if (balanceHolderId == "22991617") continue
 
-            val fieldOfActivity = row.getCell(BalansIndex.fieldOfActivity.index).toString().trim()
+            val fieldOfActivity = row.cell(BalansIndex.fieldOfActivity).toString().trim()
             if (fieldOfActivity == "Невизначені") continue
 
-            val buildingId = numericIdOrNull(row.getCell(BalansIndex.id.index)) ?: continue
+            val buildingId = numericIdOrNull(row.cell(BalansIndex.id)) ?: continue
             val isNotKievDistrict = isNotKyiv(
-                row.getCell(BalansIndex.addressPostDistrict.index).toString().lowercase().trim()
+                row.cell(BalansIndex.addressPostDistrict).toString().lowercase().trim()
             )
 
             val buildingData = mutableListOf<String>()
@@ -69,14 +71,14 @@ object Balans {
             buildingData.add("XXX")                                                        // addressLocatorDesignator - Номер Будинку
             buildingData.add("null")                                                       // addressLocatorBuilding
             buildingData.add("null")                                                       // addressLocatorName
-            buildingData.add(getStatus(row.getCell(BalansIndex.registrationId.index)))     // registrationStatus
+            buildingData.add(getStatus(row.cell(BalansIndex.registrationId)))              // registrationStatus
             buildingData.add(row.quoted(BalansIndex.registrationId))                       // registrationId
             buildingData.add("null")                                                       // registrationDate
             buildingData.add("null")                                                       // constructionReadiness
             buildingData.add(row.quoted(BalansIndex.condition))                            // condition - Стан об'єкту
             buildingData.add("null")                                                       // utilitiesAvailable
-            buildingData.add(getDt8601(row.getCell(BalansIndex.validityDate.index)))       // validityDate - Дата Актуальності
-            buildingData.add(row.getCell(BalansIndex.destinationGroup.index).toString())   // destinationGroup - Група призначення
+            buildingData.add(getDt8601(row.cell(BalansIndex.validityDate)))                // validityDate - Дата Актуальності
+            buildingData.add(row.cell(BalansIndex.destinationGroup).toString())            // destinationGroup - Група призначення
 
             tabBuildings[buildingId] = buildingData
         }
