@@ -1,0 +1,14 @@
+{
+  "name": "dkv-fetch",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Напів-автоматичне завантаження щомісячних Excel-звітів з порталу ДКВ м. Києва у data/input/",
+  "scripts": {
+    "fetch": "node fetch-reports.mjs",
+    "check": "python check_headers.py"
+  },
+  "devDependencies": {
+    "playwright": "^1.49.0"
+  }
+}
